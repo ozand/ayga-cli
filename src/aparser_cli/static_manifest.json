@@ -1,0 +1,500 @@
+{
+  "version": "2.2.0",
+  "created_at": "2026-03-08T00:00:00Z",
+  "parser_count": 50,
+  "parsers": {
+    "FreeAI::Perplexity": {
+      "name": "FreeAI::Perplexity",
+      "description": "AI-powered search via Perplexity API",
+      "category": "FreeAI",
+      "keywords": ["perplexity", "ai", "search", "llm", "freeai"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["proxyChecker"],
+      "default_overrides": {
+        "proxyChecker": "reproxy_v4",
+        "timeout": 120
+      }
+    },
+    "FreeAI::ChatGPT": {
+      "name": "FreeAI::ChatGPT",
+      "description": "OpenAI ChatGPT API access",
+      "category": "FreeAI",
+      "keywords": ["chatgpt", "openai", "gpt", "ai", "llm"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "FreeAI::Claude": {
+      "name": "FreeAI::Claude",
+      "description": "Anthropic Claude API access",
+      "category": "FreeAI",
+      "keywords": ["claude", "anthropic", "ai", "llm"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "SE::Google": {
+      "name": "SE::Google",
+      "description": "Google search engine parser",
+      "category": "SE",
+      "keywords": ["google", "search", "se"],
+      "presets": ["default", "images", "news"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "SE::Yandex": {
+      "name": "SE::Yandex",
+      "description": "Yandex search engine parser",
+      "category": "SE",
+      "keywords": ["yandex", "search", "se"],
+      "presets": ["default", "images"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "SE::Bing": {
+      "name": "SE::Bing",
+      "description": "Microsoft Bing search engine parser",
+      "category": "SE",
+      "keywords": ["bing", "microsoft", "search", "se"],
+      "presets": ["default", "images", "news"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "SE::Yahoo": {
+      "name": "SE::Yahoo",
+      "description": "Yahoo search engine parser",
+      "category": "SE",
+      "keywords": ["yahoo", "search", "se"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "SE::DuckDuckGo": {
+      "name": "SE::DuckDuckGo",
+      "description": "DuckDuckGo privacy search engine",
+      "category": "SE",
+      "keywords": ["duckduckgo", "ddg", "privacy", "search"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::Whois": {
+      "name": "Net::Whois",
+      "description": "WHOIS domain information lookup",
+      "category": "Net",
+      "keywords": ["whois", "domain", "net"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::DNS": {
+      "name": "Net::DNS",
+      "description": "DNS records lookup and resolution",
+      "category": "Net",
+      "keywords": ["dns", "domain", "net", "records"],
+      "presets": ["default", "mx", "txt"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::IP": {
+      "name": "Net::IP",
+      "description": "IP address information and geolocation",
+      "category": "Net",
+      "keywords": ["ip", "geolocation", "net"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::Ping": {
+      "name": "Net::Ping",
+      "description": "Network ping and latency check",
+      "category": "Net",
+      "keywords": ["ping", "latency", "net"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::PortCheck": {
+      "name": "Net::PortCheck",
+      "description": "TCP port availability checker",
+      "category": "Net",
+      "keywords": ["port", "tcp", "net", "check"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Net::SSL": {
+      "name": "Net::SSL",
+      "description": "SSL/TLS certificate information",
+      "category": "Net",
+      "keywords": ["ssl", "tls", "certificate", "net"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "HTML::Meta": {
+      "name": "HTML::Meta",
+      "description": "Extract meta tags from HTML pages",
+      "category": "HTML",
+      "keywords": ["html", "meta", "tags"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "HTML::Links": {
+      "name": "HTML::Links",
+      "description": "Extract all links from HTML pages",
+      "category": "HTML",
+      "keywords": ["html", "links", "href"],
+      "presets": ["default", "external", "internal"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "HTML::Images": {
+      "name": "HTML::Images",
+      "description": "Extract images from HTML pages",
+      "category": "HTML",
+      "keywords": ["html", "images", "img"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "HTML::Text": {
+      "name": "HTML::Text",
+      "description": "Extract text content from HTML pages",
+      "category": "HTML",
+      "keywords": ["html", "text", "content"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "HTML::Table": {
+      "name": "HTML::Table",
+      "description": "Extract tables from HTML pages",
+      "category": "HTML",
+      "keywords": ["html", "table", "data"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Rank::Alexa": {
+      "name": "Rank::Alexa",
+      "description": "Alexa rank and site statistics",
+      "category": "Rank",
+      "keywords": ["alexa", "rank", "statistics"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Rank::Majestic": {
+      "name": "Rank::Majestic",
+      "description": "Majestic SEO metrics and backlinks",
+      "category": "Rank",
+      "keywords": ["majestic", "seo", "backlinks"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "Rank::Ahrefs": {
+      "name": "Rank::Ahrefs",
+      "description": "Ahrefs SEO metrics and analysis",
+      "category": "Rank",
+      "keywords": ["ahrefs", "seo", "backlinks"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "Rank::Moz": {
+      "name": "Rank::Moz",
+      "description": "Moz DA/PA and link metrics",
+      "category": "Rank",
+      "keywords": ["moz", "da", "pa", "seo"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "Rank::SEMrush": {
+      "name": "Rank::SEMrush",
+      "description": "SEMrush domain analytics",
+      "category": "Rank",
+      "keywords": ["semrush", "seo", "analytics"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "Social::Instagram": {
+      "name": "Social::Instagram",
+      "description": "Instagram profile and post data",
+      "category": "Social",
+      "keywords": ["instagram", "social", "profile"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Social::Twitter": {
+      "name": "Social::Twitter",
+      "description": "Twitter/X profile and tweet data",
+      "category": "Social",
+      "keywords": ["twitter", "x", "social", "tweets"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Social::Facebook": {
+      "name": "Social::Facebook",
+      "description": "Facebook page and profile data",
+      "category": "Social",
+      "keywords": ["facebook", "social", "page"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Social::LinkedIn": {
+      "name": "Social::LinkedIn",
+      "description": "LinkedIn profile and company data",
+      "category": "Social",
+      "keywords": ["linkedin", "social", "profile"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Social::YouTube": {
+      "name": "Social::YouTube",
+      "description": "YouTube channel and video data",
+      "category": "Social",
+      "keywords": ["youtube", "video", "channel"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Social::TikTok": {
+      "name": "Social::TikTok",
+      "description": "TikTok profile and video data",
+      "category": "Social",
+      "keywords": ["tiktok", "video", "social"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Ecom::Amazon": {
+      "name": "Ecom::Amazon",
+      "description": "Amazon product and review data",
+      "category": "Ecom",
+      "keywords": ["amazon", "ecommerce", "product"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Ecom::eBay": {
+      "name": "Ecom::eBay",
+      "description": "eBay product and auction data",
+      "category": "Ecom",
+      "keywords": ["ebay", "ecommerce", "auction"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Ecom::AliExpress": {
+      "name": "Ecom::AliExpress",
+      "description": "AliExpress product data",
+      "category": "Ecom",
+      "keywords": ["aliexpress", "ecommerce", "product"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Ecom::Wildberries": {
+      "name": "Ecom::Wildberries",
+      "description": "Wildberries product data",
+      "category": "Ecom",
+      "keywords": ["wildberries", "ecommerce", "product"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Ecom::Ozon": {
+      "name": "Ecom::Ozon",
+      "description": "Ozon product data",
+      "category": "Ecom",
+      "keywords": ["ozon", "ecommerce", "product"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Map::GoogleMaps": {
+      "name": "Map::GoogleMaps",
+      "description": "Google Maps places and reviews",
+      "category": "Map",
+      "keywords": ["google maps", "places", "reviews"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": ["apiKey"],
+      "default_overrides": {}
+    },
+    "Map::YandexMaps": {
+      "name": "Map::YandexMaps",
+      "description": "Yandex Maps places and reviews",
+      "category": "Map",
+      "keywords": ["yandex maps", "places", "reviews"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Map::2GIS": {
+      "name": "Map::2GIS",
+      "description": "2GIS places and reviews",
+      "category": "Map",
+      "keywords": ["2gis", "places", "reviews"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Util::ProxyChecker": {
+      "name": "Util::ProxyChecker",
+      "description": "Check proxy availability and speed",
+      "category": "Util",
+      "keywords": ["proxy", "checker", "util"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Util::EmailValidator": {
+      "name": "Util::EmailValidator",
+      "description": "Validate email addresses",
+      "category": "Util",
+      "keywords": ["email", "validator", "util"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Util::PhoneValidator": {
+      "name": "Util::PhoneValidator",
+      "description": "Validate and format phone numbers",
+      "category": "Util",
+      "keywords": ["phone", "validator", "util"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Util::URLChecker": {
+      "name": "Util::URLChecker",
+      "description": "Check URL status and redirects",
+      "category": "Util",
+      "keywords": ["url", "checker", "util"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Util::Screenshot": {
+      "name": "Util::Screenshot",
+      "description": "Capture webpage screenshots",
+      "category": "Util",
+      "keywords": ["screenshot", "capture", "util"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "News::GoogleNews": {
+      "name": "News::GoogleNews",
+      "description": "Google News articles search",
+      "category": "News",
+      "keywords": ["google news", "news", "articles"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "News::YandexNews": {
+      "name": "News::YandexNews",
+      "description": "Yandex News articles search",
+      "category": "News",
+      "keywords": ["yandex news", "news", "articles"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Image::GoogleImages": {
+      "name": "Image::GoogleImages",
+      "description": "Google Images search",
+      "category": "Image",
+      "keywords": ["google images", "images", "search"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Image::YandexImages": {
+      "name": "Image::YandexImages",
+      "description": "Yandex Images search",
+      "category": "Image",
+      "keywords": ["yandex images", "images", "search"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Video::YouTubeSearch": {
+      "name": "Video::YouTubeSearch",
+      "description": "YouTube video search",
+      "category": "Video",
+      "keywords": ["youtube", "video", "search"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    },
+    "Video::Vimeo": {
+      "name": "Video::Vimeo",
+      "description": "Vimeo video search",
+      "category": "Video",
+      "keywords": ["vimeo", "video", "search"],
+      "presets": ["default"],
+      "parameters": {},
+      "required_overrides": [],
+      "default_overrides": {}
+    }
+  }
+}
