@@ -1,0 +1,3 @@
+[console_scripts]
+aparser = aparser_cli.main:app
+aparser-mcp = aparser_cli.mcp.server:main
