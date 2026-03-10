@@ -30,7 +30,10 @@ class TestAParserHttpClient:
     async def test_init_default_config(self):
         """Test client initialization with default config."""
         with patch("aparser_cli.client.http.AParserConfig") as MockConfig:
-            MockConfig.return_value = MagicMock()
+            mock_config = MagicMock()
+            mock_config.default_timeout = 300
+            mock_config.get_http_basic_auth.return_value = None
+            MockConfig.return_value = mock_config
             client = AParserHttpClient()
             assert client.config is not None
 
@@ -46,6 +49,7 @@ class TestAParserHttpClient:
             
             assert client._client is not None
             MockClient.assert_called_once()
+            assert MockClient.call_args.kwargs.get("auth") is not None
 
     @pytest.mark.asyncio
     async def test_close(self, mock_config):
@@ -97,7 +101,7 @@ class TestAParserHttpClientRequests:
     @pytest.mark.asyncio
     async def test_ping_success(self, mock_config, mock_httpx_client):
         """Test successful ping."""
-        mock_httpx_client.post.return_value.json.return_value = {"success": 1}
+        mock_httpx_client.post.return_value.json.return_value = {"success": 1, "data": "pong"}
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
             client = AParserHttpClient(config=mock_config)
@@ -176,6 +180,21 @@ class TestAParserHttpClientRequests:
             assert len(result) == 2
             assert result[0]["name"] == "SE::Google"
             assert result[1]["name"] == "Net::Whois"
+
+    @pytest.mark.asyncio
+    async def test_get_parsers_list_falls_back_to_static_manifest(self, mock_config, mock_httpx_client):
+        """Test parser list fallback when API action is unsupported."""
+        mock_httpx_client.post.return_value.json.return_value = {
+            "success": 0,
+            "msg": "Unknown action",
+        }
+
+        with patch("httpx.AsyncClient", return_value=mock_httpx_client):
+            client = AParserHttpClient(config=mock_config)
+            await client.connect()
+            result = await client.get_parsers_list()
+
+            assert any(parser["name"] == "SE::Google" for parser in result)
 
     @pytest.mark.asyncio
     async def test_get_parser_info(self, mock_config, mock_httpx_client):

@@ -15,6 +15,7 @@ from typing import Optional
 import keyring
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings.sources import DotEnvSettingsSource
 
 
 def get_config_dir() -> Path:
@@ -35,6 +36,9 @@ def get_config_dir() -> Path:
     else:
         # Linux/Unix: ~/.config/aparser-cli
         return Path.home() / '.config' / 'aparser-cli'
+
+
+CONFIG_DIR = get_config_dir()
 
 
 def get_keyring_service() -> str:
@@ -91,9 +95,7 @@ class AParserConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="APARSER_",
-        env_file=str(get_config_dir() / '.env'),
         env_file_encoding="utf-8",
-        yaml_file=str(get_config_dir() / 'config.yaml'),
         secrets_dir="/run/secrets",  # Linux-specific, Windows/macOS use env vars
         extra="ignore",
     )
@@ -102,6 +104,14 @@ class AParserConfig(BaseSettings):
     http_url: str = Field(
         default="http://127.0.0.1:9091/API",
         description="A-Parser HTTP API endpoint URL",
+    )
+    http_basic_username: str = Field(
+        default="",
+        description="Optional HTTP Basic Auth username",
+    )
+    http_basic_password: Optional[SecretStr] = Field(
+        default=None,
+        description="Optional HTTP Basic Auth password (defaults to API password)",
     )
 
     # Redis Configuration
@@ -165,6 +175,23 @@ class AParserConfig(BaseSettings):
         description="Logging level",
     )
 
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        """Load environment variables and the canonical config .env file."""
+        config_dotenv = DotEnvSettingsSource(
+            settings_cls,
+            env_file=str(CONFIG_DIR / ".env"),
+            env_file_encoding="utf-8",
+        )
+        return init_settings, env_settings, config_dotenv, file_secret_settings
+
     @field_validator("http_url")
     @classmethod
     def validate_http_url(cls, v: str) -> str:
@@ -197,6 +224,23 @@ class AParserConfig(BaseSettings):
             pass
 
         return None
+
+    def get_http_basic_auth(self) -> Optional[tuple[str, str]]:
+        """Get HTTP Basic Auth credentials.
+
+        Returns:
+            Tuple of (username, password) if available, otherwise None.
+        """
+        password: Optional[str] = None
+        if self.http_basic_password:
+            password = self.http_basic_password.get_secret_value()
+        else:
+            password = self.get_password()
+
+        if not password:
+            return None
+
+        return (self.http_basic_username, password)
 
     def set_password_keyring(self, password: str) -> None:
         """Store password in OS keyring.
@@ -233,10 +277,9 @@ class AParserConfig(BaseSettings):
         """Get the configuration directory path.
 
         Returns:
-            Path to ~/.config/aparser-cli/
+            Platform-specific config directory path.
         """
-        config_dir = Path.home() / ".config" / "aparser-cli"
-        return config_dir
+        return get_config_dir()
 
     @classmethod
     def ensure_config_dir(cls) -> Path:

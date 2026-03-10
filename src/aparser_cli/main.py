@@ -10,10 +10,13 @@ Implements the Typer application with command groups for:
 
 from __future__ import annotations
 
+import inspect
 import sys
 from typing import Optional
 
+import click
 import typer
+import typer.core
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -31,6 +34,50 @@ from aparser_cli.commands.test import test_cmd as test_command
 
 # Initialize Rich console for pretty output
 console = Console()
+
+
+def _patch_click_make_metavar() -> None:
+    """Patch Click/Typer metavar compatibility for Python 3.13 help output."""
+    signature = inspect.signature(click.Parameter.make_metavar)
+    if "ctx" not in signature.parameters:
+        return
+
+    original_make_metavar = click.Parameter.make_metavar
+
+    def compat_make_metavar(self: click.Parameter, ctx: Optional[click.Context] = None) -> str:
+        if ctx is None:
+            ctx = click.Context(click.Command("aparser"))
+        return original_make_metavar(self, ctx)
+
+    click.Parameter.make_metavar = compat_make_metavar
+
+    def compat_typer_argument_make_metavar(
+        self: typer.core.TyperArgument,
+        ctx: Optional[click.Context] = None,
+    ) -> str:
+        if self.metavar is not None:
+            return self.metavar
+
+        var = (self.name or "").upper()
+        if not self.required:
+            var = f"[{var}]"
+
+        type_signature = inspect.signature(self.type.get_metavar)
+        if "ctx" in type_signature.parameters:
+            type_var = self.type.get_metavar(self, ctx or click.Context(click.Command("aparser")))
+        else:
+            type_var = self.type.get_metavar(self)
+
+        if type_var:
+            var += f":{type_var}"
+        if self.nargs != 1:
+            var += "..."
+        return var
+
+    typer.core.TyperArgument.make_metavar = compat_typer_argument_make_metavar
+
+
+_patch_click_make_metavar()
 
 # Create the main Typer app
 app = typer.Typer(

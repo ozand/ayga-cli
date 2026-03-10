@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 
 # Import new static manifest module
 from aparser_cli.static_manifest import (
+    ParserDefaults,
     STATIC_PARSERS,
     get_parser_defaults,
     list_parsers,
@@ -483,18 +484,25 @@ class ManifestCache:
             total = len(parser_names)
 
             for i, name in enumerate(parser_names):
+                parser_name = name.get("name") if isinstance(name, dict) else str(name)
                 if verbose and progress_callback:
-                    progress_callback(i + 1, total, name)
+                    progress_callback(i + 1, total, parser_name)
                 elif verbose and (i + 1) % 10 == 0:
                     print(f"  Progress: {i + 1}/{total} parsers...")
 
                 try:
-                    info_data = await client.get_parser_info(name)
-                    parser_info = self._convert_api_info_to_parser_info(name, info_data)
-                    parsers[name] = parser_info
+                    info_data = await client.get_parser_info(parser_name)
+                    parser_info = self._convert_api_info_to_parser_info(parser_name, info_data)
+                    parsers[parser_name] = parser_info
                 except Exception as e:
+                    static_defaults = get_parser_defaults(parser_name)
+                    if static_defaults:
+                        parsers[parser_name] = self._convert_static_defaults_to_parser_info(static_defaults)
+                        if verbose:
+                            print(f"  Warning: Falling back to static manifest for {parser_name}: {e}")
+                        continue
                     if verbose:
-                        print(f"  Warning: Failed to fetch info for {name}: {e}")
+                        print(f"  Warning: Failed to fetch info for {parser_name}: {e}")
                     # Continue with other parsers
 
             if verbose:
@@ -589,6 +597,36 @@ class ManifestCache:
             category=category,
             keywords=[],  # Will be auto-generated from name and description
             presets=presets,
+            parameters=parameters,
+        )
+
+    def _convert_static_defaults_to_parser_info(self, defaults: ParserDefaults) -> ParserInfo:
+        """Convert static manifest defaults into a ParserInfo model."""
+        parameters: dict[str, ParameterSchema] = {}
+        for option_name, value in defaults.default_overrides.items():
+            option_type = "boolean" if isinstance(value, bool) else "integer" if isinstance(value, int) and not isinstance(value, bool) else "float" if isinstance(value, float) else "string"
+            parameters[option_name] = ParameterSchema(
+                type=option_type,
+                description="Static manifest default option",
+                required=option_name in defaults.required_overrides,
+                default=value,
+            )
+
+        for option_name in defaults.required_overrides:
+            parameters.setdefault(
+                option_name,
+                ParameterSchema(
+                    type="string",
+                    description="Required option from static manifest",
+                    required=True,
+                ),
+            )
+
+        return ParserInfo(
+            name=defaults.parser,
+            description=defaults.description,
+            category=defaults.category,
+            presets=["default"],
             parameters=parameters,
         )
 
@@ -854,7 +892,20 @@ async def get_manifest(
         if verbose:
             print(f"Failed to sync manifest: {e}")
         # Return stale cache if available
-        return cache.load()
+        manifest = cache.load()
+        if manifest:
+            return manifest
+
+        static = StaticManifest()
+        static_parsers = {
+            name: cache._convert_static_defaults_to_parser_info(defaults)
+            for name, defaults in STATIC_PARSERS.items()
+        }
+        return Manifest(
+            version=static.version,
+            parser_count=len(static_parsers),
+            parsers=static_parsers,
+        )
 
 
 def search_parsers(

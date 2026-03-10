@@ -2,6 +2,7 @@
 
 import pytest
 import asyncio
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
@@ -28,7 +29,22 @@ def mock_config():
     config.default_config_preset = "default"
     config.log_level = "INFO"
     config.get_password.return_value = "test_password"
+    config.get_http_basic_auth.return_value = ("", "test_password")
     return config
+
+
+@pytest.fixture(autouse=True)
+def clear_aparser_env(monkeypatch):
+    """Clear A-Parser environment variables for test isolation."""
+    for key in list(__import__("os").environ):
+        if key.startswith("APARSER_"):
+            monkeypatch.delenv(key, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def isolate_config_dir(monkeypatch, tmp_path):
+    """Redirect config file loading to an isolated temp directory."""
+    monkeypatch.setattr("aparser_cli.config.CONFIG_DIR", tmp_path / "aparser-cli")
 
 
 @pytest.fixture
