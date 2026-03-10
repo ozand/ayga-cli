@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 from pydantic import ValidationError
 
-from aparser_cli.config import AParserConfig, get_config, reload_config
+from aparser_cli.config import AParserConfig, get_config, get_config_dir, reload_config
 
 
 class TestAParserConfig:
@@ -156,7 +156,30 @@ class TestAParserConfig:
         config_dir = AParserConfig.get_config_dir()
         assert isinstance(config_dir, Path)
         assert config_dir.name == "aparser-cli"
-        assert config_dir.parent.name == ".config"
+        assert config_dir == get_config_dir()
+        assert config_dir.parent.name == "Roaming"
+
+    def test_get_config_dir_windows(self, monkeypatch):
+        """Test Windows config directory resolution."""
+        appdata = Path("C:/Users/test/AppData/Roaming")
+        monkeypatch.setenv("APPDATA", str(appdata))
+        with patch("aparser_cli.config.sys.platform", "win32"):
+            config_dir = get_config_dir()
+        assert config_dir == appdata / "aparser-cli"
+
+    def test_get_config_dir_macos(self):
+        """Test macOS config directory resolution."""
+        with patch("aparser_cli.config.sys.platform", "darwin"):
+            with patch("aparser_cli.config.Path.home", return_value=Path("/Users/test")):
+                config_dir = get_config_dir()
+        assert config_dir == Path("/Users/test/Library/Application Support/aparser-cli")
+
+    def test_get_config_dir_linux(self):
+        """Test Linux config directory resolution."""
+        with patch("aparser_cli.config.sys.platform", "linux"):
+            with patch("aparser_cli.config.Path.home", return_value=Path("/home/test")):
+                config_dir = get_config_dir()
+        assert config_dir == Path("/home/test/.config/aparser-cli")
 
     def test_ensure_config_dir(self):
         """Test ensuring config directory exists."""

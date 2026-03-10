@@ -28,6 +28,16 @@ def get_manifest_cache() -> ManifestCache:
     return ManifestCache()
 
 
+def _load_manifest_with_fallback(use_cache: bool = True):
+    """Load manifest from cache/API with static fallback."""
+    if use_cache:
+        cache = ManifestCache()
+        manifest = cache.load()
+        if manifest:
+            return manifest
+    return asyncio.run(get_manifest(verbose=False))
+
+
 @app.command("list")
 def list_parsers(
     category: Optional[str] = typer.Option(None, "--category", "-c", help="Filter by category"),
@@ -37,14 +47,10 @@ def list_parsers(
     """List all available parsers."""
     try:
         # Load manifest
-        if use_cache:
-            cache = ManifestCache()
-            manifest = cache.load()
-        else:
-            manifest = asyncio.run(get_manifest(verbose=False))
+        manifest = _load_manifest_with_fallback(use_cache=use_cache)
 
         if not manifest:
-            console.print("[red]Error:[/red] No cached manifest found. Use 'aparser parsers list-static' for offline parser list.")
+            console.print("[red]Error:[/red] No parser manifest available.")
             raise typer.Exit(code=1)
 
         # Filter by category if specified
@@ -108,13 +114,15 @@ def parser_info(
 ):
     """Get detailed information about a specific parser."""
     try:
+        if not name:
+            raise typer.BadParameter("Parser name is required")
+
         # First try static manifest for required overrides info
         static = StaticManifest()
         static_parser = static.get_parser(name)
 
-        # Also try to load from cache for full details
-        cache = ManifestCache()
-        manifest = cache.load()
+        # Also try to load from cache or fallback manifest for full details
+        manifest = _load_manifest_with_fallback(use_cache=True)
 
         if not manifest and not static_parser:
             console.print(f"[red]Error:[/red] Parser '{name}' not found in static manifest or cache.")
@@ -326,11 +334,10 @@ def search_command(
 ):
     """Search for parsers using fuzzy matching."""
     try:
-        cache = ManifestCache()
-        manifest = cache.load()
+        manifest = _load_manifest_with_fallback(use_cache=True)
 
         if not manifest:
-            console.print("[red]Error:[/red] No cached manifest found. Use 'aparser parsers list-static' for offline parser list.")
+            console.print("[red]Error:[/red] No parser manifest available.")
             raise typer.Exit(code=1)
 
         matches = search_parsers(
@@ -395,11 +402,10 @@ def list_categories(
 ):
     """List all parser categories."""
     try:
-        cache = ManifestCache()
-        manifest = cache.load()
+        manifest = _load_manifest_with_fallback(use_cache=True)
 
         if not manifest:
-            console.print("[red]Error:[/red] No cached manifest found. Use 'aparser parsers list-static' for offline parser list.")
+            console.print("[red]Error:[/red] No parser manifest available.")
             raise typer.Exit(code=1)
 
         categories = {}

@@ -44,6 +44,15 @@ class AParserHttpClient:
         self.config = config or AParserConfig()
         self.timeout = timeout or self.config.default_timeout
         self._client: Optional[httpx.AsyncClient] = None
+        self._basic_auth = self._build_basic_auth()
+
+    def _build_basic_auth(self) -> Optional[httpx.BasicAuth]:
+        """Build HTTP Basic Auth configuration if credentials are available."""
+        credentials = self.config.get_http_basic_auth()
+        if not credentials:
+            return None
+        username, password = credentials
+        return httpx.BasicAuth(username, password)
 
     async def __aenter__(self) -> "AParserHttpClient":
         """Async context manager entry."""
@@ -64,6 +73,7 @@ class AParserHttpClient:
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
+                auth=self._basic_auth,
             )
 
     async def close(self) -> None:
@@ -100,6 +110,51 @@ class AParserHttpClient:
             payload["data"] = data
         return payload
 
+    def _extract_error_message(self, result: dict[str, Any]) -> str:
+        """Extract a meaningful error message from an API response."""
+        return (
+            result.get("error")
+            or result.get("msg")
+            or result.get("message")
+            or "Unknown API error"
+        )
+
+    def _coerce_parsers_list(self, data: Any) -> list[dict[str, Any]]:
+        """Normalize parser list payloads to a list of parser dictionaries."""
+        if isinstance(data, list):
+            return [item for item in data if isinstance(item, dict)]
+
+        if isinstance(data, dict):
+            parsers = data.get("parsers")
+            if isinstance(parsers, list):
+                return [item for item in parsers if isinstance(item, dict)]
+
+            if parsers is None:
+                items = []
+                for name, info in data.items():
+                    if isinstance(info, dict):
+                        item = {"name": name, **info}
+                    else:
+                        item = {"name": str(info)}
+                    items.append(item)
+                return items
+
+        return []
+
+    def _static_parser_list(self) -> list[dict[str, Any]]:
+        """Build a parser list from the bundled static manifest."""
+        from aparser_cli.static_manifest import STATIC_PARSERS
+
+        return [
+            {
+                "name": parser.parser,
+                "description": parser.description,
+                "category": parser.category,
+                "source": "static",
+            }
+            for parser in STATIC_PARSERS.values()
+        ]
+
     async def _request(
         self,
         action: str,
@@ -129,7 +184,7 @@ class AParserHttpClient:
 
         try:
             response = await client.post(
-                "",
+                ".",
                 json=payload,
                 timeout=request_timeout,
             )
@@ -164,7 +219,7 @@ class AParserHttpClient:
 
         # Check for API-level errors
         if not result.get("success", True):
-            error_msg = result.get("error", "Unknown API error")
+            error_msg = self._extract_error_message(result)
             error_code = result.get("code")
 
             # Parse error for actionable recommendations
@@ -215,7 +270,10 @@ class AParserHttpClient:
             AParserAPIError: If API returns an error
         """
         result = await self._request("ping")
-        return result.get("success", False)
+        data = result.get("data")
+        if isinstance(data, str):
+            return data.lower() == "pong"
+        return bool(result.get("success", False))
 
     async def one_request(
         self,
@@ -346,8 +404,15 @@ class AParserHttpClient:
             AParserHTTPError: If HTTP request fails
             AParserAPIError: If API returns an error
         """
-        result = await self._request("getParsersList")
-        return result.get("data", [])
+        try:
+            result = await self._request("getParsersList")
+            parsers = self._coerce_parsers_list(result.get("data", []))
+            if parsers:
+                return parsers
+        except AParserAPIError:
+            pass
+
+        return self._static_parser_list()
 
     async def get_parser_info(self, parser: str) -> dict:
         """Get detailed information about a specific parser.

@@ -39,6 +39,12 @@ export APARSER_REDIS_PORT="6379"
 export APARSER_PASSWORD="your_password"
 ```
 
+- Config files, presets, and manifest cache now share one canonical config directory:
+  - Windows: `%APPDATA%\aparser-cli`
+  - macOS: `~/Library/Application Support/aparser-cli`
+  - Linux: `~/.config/aparser-cli`
+- HTTP requests can use both the API password payload and HTTP Basic Auth. Set `APARSER_HTTP_BASIC_USERNAME` and optionally `APARSER_HTTP_BASIC_PASSWORD` if your backend requires explicit Basic Auth credentials.
+
 ## 🖥️ CLI Usage
 
 ### Basic Commands

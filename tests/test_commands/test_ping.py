@@ -20,34 +20,71 @@ class TestPingCommand:
 
     def test_ping_default(self):
         """Test ping command with default options."""
-        result = runner.invoke(app, ["ping"])
+        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+            "status": "ok",
+            "reachable": True,
+            "message": "A-Parser API responded with pong",
+            "http_url": "http://localhost:9091/API",
+            "basic_auth_enabled": True,
+            "basic_auth_username": "",
+        })):
+            result = runner.invoke(app, ["ping"])
         assert result.exit_code == 0
-        assert "Connected" in result.output or "Connection successful" in result.output
+        assert "A-Parser API responded with pong" in result.output
 
     def test_ping_with_host(self):
         """Test ping command with custom host."""
-        result = runner.invoke(app, ["ping", "--host", "http://example.com"])
+        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+            "status": "ok",
+            "reachable": True,
+            "message": "A-Parser API responded with pong",
+            "http_url": "http://example.com:9091/API",
+            "basic_auth_enabled": False,
+            "basic_auth_username": None,
+        })):
+            result = runner.invoke(app, ["ping", "--host", "http://example.com", "--port", "9091"])
         assert result.exit_code == 0
-        assert "example.com" in result.output
+        assert "example.com:9091/API" in result.output
 
     def test_ping_with_port(self):
         """Test ping command with custom port."""
-        result = runner.invoke(app, ["ping", "--port", "8080"])
+        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+            "status": "ok",
+            "reachable": True,
+            "message": "A-Parser API responded with pong",
+            "http_url": "http://127.0.0.1:8080/API",
+            "basic_auth_enabled": False,
+            "basic_auth_username": None,
+        })):
+            result = runner.invoke(app, ["ping", "--host", "http://127.0.0.1", "--port", "8080"])
         assert result.exit_code == 0
 
     def test_ping_json_output(self):
         """Test ping command with JSON output."""
-        result = runner.invoke(app, ["ping", "--json"])
+        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+            "status": "ok",
+            "reachable": True,
+            "message": "A-Parser API responded with pong",
+            "http_url": "http://localhost:9091/API",
+            "basic_auth_enabled": True,
+            "basic_auth_username": "",
+        })):
+            result = runner.invoke(app, ["ping", "--json"])
         assert result.exit_code == 0
-        # Should output valid JSON
         import json
-        try:
-            json.loads(result.output)
-        except json.JSONDecodeError:
-            # Output might have Rich formatting, check for JSON-like content
-            assert "status" in result.output or "{" in result.output
+        data = json.loads(result.output)
+        assert data["reachable"] is True
 
     def test_ping_with_timeout(self):
         """Test ping command with custom timeout."""
-        result = runner.invoke(app, ["ping", "--timeout", "10"])
+        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+            "status": "ok",
+            "reachable": True,
+            "message": "A-Parser API responded with pong",
+            "http_url": "http://localhost:9091/API",
+            "basic_auth_enabled": False,
+            "basic_auth_username": None,
+        })) as ping_backend:
+            result = runner.invoke(app, ["ping", "--timeout", "10"])
         assert result.exit_code == 0
+        assert ping_backend.await_count == 1
