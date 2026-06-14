@@ -19,7 +19,7 @@ from ayga_cli.manifest import (
 )
 from ayga_cli.config import get_config
 
-app = typer.Typer(help="Manage ayga-parser parsers")
+app = typer.Typer(help="Manage ayga_parser parsers")
 console = Console()
 
 
@@ -126,7 +126,7 @@ def parser_info(
 
         if not manifest and not static_parser:
             console.print(f"[red]Error:[/red] Parser '{name}' not found in static manifest or cache.")
-            console.print("[yellow]Tip:[/yellow] Use 'ayga-parser parsers list-static' to see available parsers.")
+            console.print("[yellow]Tip:[/yellow] Use 'ayga_parser parsers list-static' to see available parsers.")
             raise typer.Exit(code=1)
 
         parser = None
@@ -210,7 +210,7 @@ def parser_info(
                     else:
                         override_parts.append(f"{override}=YOUR_VALUE")
 
-                example_cmd = f'ayga-parser run {parser_name} "your query" \\\n    --overrides "{",".join(override_parts)}"'
+                example_cmd = f'ayga_parser run {parser_name} "your query" \\\n    --overrides "{",".join(override_parts)}"'
                 details.append(f"[dim]{example_cmd}[/dim]")
 
                 # Special note for proxyChecker
@@ -453,7 +453,7 @@ def cache_info(
 
     if not cache.exists():
         console.print("[yellow]Cache does not exist.[/yellow]")
-        console.print("Use 'ayga-parser parsers list-static' for offline parser list.")
+        console.print("Use 'ayga_parser parsers list-static' for offline parser list.")
         return
 
     # Show cache info

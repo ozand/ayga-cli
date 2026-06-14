@@ -1,4 +1,4 @@
-"""Preset management commands for ayga-parser CLI."""
+"""Preset management commands for ayga_parser CLI."""
 
 import json
 from typing import Optional
@@ -34,7 +34,7 @@ def list_presets(
                 console.print(json.dumps([], indent=2))
             else:
                 console.print("[yellow]No presets saved yet.[/yellow]")
-                console.print("Use [cyan]ayga-parser presets save <name> <parser>[/cyan] to create one.")
+                console.print("Use [cyan]ayga_parser presets save <name> <parser>[/cyan] to create one.")
             return
 
         if format_json:
@@ -103,12 +103,12 @@ def save_preset(
 
     Examples:
         # Save a simple preset
-        ayga-parser presets save perplexity-business "FreeAI::Perplexity" \
+        ayga_parser presets save perplexity-business "FreeAI::Perplexity" \
             --description "For business queries" \
             --overrides "proxyChecker=reproxy_v4,timeout=120"
 
         # Save with JSON overrides
-        ayga-parser presets save google-search "SE::Google" \
+        ayga_parser presets save google-search "SE::Google" \
             --overrides '{"pagecount": 5, "region": "us"}'
     """
     try:
@@ -196,7 +196,7 @@ def show_preset(
                 }, indent=2))
             else:
                 console.print(f"[red]Error:[/red] Preset '{name}' not found.")
-                console.print("Use [cyan]ayga-parser presets list[/cyan] to see available presets.")
+                console.print("Use [cyan]ayga_parser presets list[/cyan] to see available presets.")
             raise typer.Exit(code=1)
 
         if format_json:
@@ -229,7 +229,7 @@ def show_preset(
             details.extend([
                 "",
                 "[bold]Usage:[/bold]",
-                f"  [cyan]ayga-parser run --preset {preset.name} \"your query\"[/cyan]",
+                f"  [cyan]ayga_parser run --preset {preset.name} \"your query\"[/cyan]",
             ])
 
             panel = Panel(

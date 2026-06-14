@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Quick benchmark for ayga-parser CLI utility features."""
+"""Quick benchmark for ayga_parser CLI utility features."""
 
 import time
 import sys
@@ -31,7 +31,7 @@ def create_test_manifest(num_parsers: int = 1000) -> Manifest:
 
 def main():
     print("=" * 60)
-    print("ayga-parser CLI Quick Benchmark")
+    print("ayga_parser CLI Quick Benchmark")
     print("=" * 60)
 
     # Create manifest

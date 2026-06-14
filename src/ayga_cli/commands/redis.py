@@ -1,4 +1,4 @@
-"""Redis queue management commands for ayga-parser CLI."""
+"""Redis queue management commands for ayga_parser CLI."""
 
 import asyncio
 import json
@@ -12,7 +12,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-from ayga_cli.client.redis import ayga-parserRedisClient
+from ayga_cli.client.redis import AygaParserRedisClient
 from ayga_cli.config import get_config
 from ayga_cli.presets import get_preset_manager
 
@@ -79,16 +79,16 @@ def redis_status(
     Shows queue depth, connection status, and other queue statistics.
 
     Examples:
-        ayga-parser redis status
-        ayga-parser redis status --queue custom_queue
-        ayga-parser redis status --json
+        ayga_parser redis status
+        ayga_parser redis status --queue custom_queue
+        ayga_parser redis status --json
     """
     try:
         config = get_config()
         queue_name = queue or config.redis_queue
 
         async def check_status():
-            async with ayga-parserRedisClient(
+            async with AygaParserRedisClient(
                 redis_host=config.redis_host,
                 redis_port=config.redis_port,
                 redis_queue=queue_name,
@@ -198,20 +198,20 @@ def redis_push(
 ):
     """Push a task to Redis queue.
 
-    Pushes a parsing task to the ayga-parser Redis queue for async processing.
+    Pushes a parsing task to the ayga_parser Redis queue for async processing.
     Returns immediately with a job ID unless --wait is specified.
 
     Examples:
         # Push a simple task
-        ayga-parser redis push "FreeAI::Perplexity" "What is machine learning?"
+        ayga_parser redis push "FreeAI::Perplexity" "What is machine learning?"
 
         # Push with preset and options
-        ayga-parser redis push "FreeAI::Perplexity" "query" \
+        ayga_parser redis push "FreeAI::Perplexity" "query" \
             --preset default \
             --options "proxyChecker=reproxy_v4,timeout=120"
 
         # Push and wait for result
-        ayga-parser redis push "SE::Google" "python tutorial" --wait --timeout 60
+        ayga_parser redis push "SE::Google" "python tutorial" --wait --timeout 60
     """
     try:
         config = get_config()
@@ -221,7 +221,7 @@ def redis_push(
         job_id = str(uuid.uuid4())
 
         async def do_push():
-            async with ayga-parserRedisClient(
+            async with AygaParserRedisClient(
                 redis_host=config.redis_host,
                 redis_port=config.redis_port,
                 redis_queue=config.redis_queue,
@@ -280,7 +280,7 @@ def redis_push(
             if result["status"] == "timeout":
                 console.print(f"[yellow]Timeout:[/yellow] {result['message']}")
                 console.print(f"[dim]Result queue: {result['result_queue']}[/dim]")
-                console.print("Use [cyan]ayga-parser redis pop {result_queue}[/cyan] to check later.")
+                console.print("Use [cyan]ayga_parser redis pop {result_queue}[/cyan] to check later.")
                 raise typer.Exit(code=124)
 
             status_style = "bold green" if result["status"] == "completed" else "bold yellow"
@@ -340,16 +340,16 @@ def redis_pop(
 
     Examples:
         # Non-blocking check
-        ayga-parser redis pop my_results
+        ayga_parser redis pop my_results
 
         # Wait up to 60 seconds for result
-        ayga-parser redis pop my_results --timeout 60
+        ayga_parser redis pop my_results --timeout 60
     """
     try:
         config = get_config()
 
         async def do_pop():
-            async with ayga-parserRedisClient(
+            async with AygaParserRedisClient(
                 redis_host=config.redis_host,
                 redis_port=config.redis_port,
                 redis_queue=config.redis_queue,
@@ -401,15 +401,15 @@ def redis_depth(
     """Show queue depth (number of pending tasks).
 
     Examples:
-        ayga-parser redis depth
-        ayga-parser redis depth --queue custom_queue
+        ayga_parser redis depth
+        ayga_parser redis depth --queue custom_queue
     """
     try:
         config = get_config()
         queue_name = queue or config.redis_queue
 
         async def get_depth():
-            async with ayga-parserRedisClient(
+            async with AygaParserRedisClient(
                 redis_host=config.redis_host,
                 redis_port=config.redis_port,
                 redis_queue=config.redis_queue,

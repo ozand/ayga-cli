@@ -1,40 +1,40 @@
-"""Tests for ayga-parser HTTP client."""
+"""Tests for ayga_parser HTTP client."""
 
 import pytest
 import json
 from unittest.mock import AsyncMock, patch, MagicMock
 import httpx
 
-from ayga_cli.client.http import ayga-parserHttpClient
-from ayga_cli.config import ayga-parserConfig
+from ayga_cli.client.http import AygaParserHttpClient
+from ayga_cli.config import AygaParserConfig
 from ayga_cli.exceptions import (
-    ayga-parserAPIError,
-    ayga-parserAuthError,
-    ayga-parserHTTPError,
-    ayga-parserTimeoutError,
-    ayga-parserValidationError,
+    AygaParserAPIError,
+    AygaParserAuthError,
+    AygaParserHTTPError,
+    AygaParserTimeoutError,
+    AygaParserValidationError,
 )
 
 
-class Testayga-parserHttpClient:
-    """Test suite for ayga-parserHttpClient."""
+class TestAygaParserHttpClient:
+    """Test suite for AygaParserHttpClient."""
 
     @pytest.mark.asyncio
     async def test_init_with_config(self, mock_config):
         """Test client initialization with config."""
-        client = ayga-parserHttpClient(config=mock_config)
+        client = AygaParserHttpClient(config=mock_config)
         assert client.config == mock_config
         assert client.timeout == mock_config.default_timeout
 
     @pytest.mark.asyncio
     async def test_init_default_config(self):
         """Test client initialization with default config."""
-        with patch("ayga_cli.client.http.ayga-parserConfig") as MockConfig:
+        with patch("ayga_cli.client.http.AygaParserConfig") as MockConfig:
             mock_config = MagicMock()
             mock_config.default_timeout = 300
             mock_config.get_http_basic_auth.return_value = None
             MockConfig.return_value = mock_config
-            client = ayga-parserHttpClient()
+            client = AygaParserHttpClient()
             assert client.config is not None
 
     @pytest.mark.asyncio
@@ -44,7 +44,7 @@ class Testayga-parserHttpClient:
             mock_client = AsyncMock()
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
             assert client._client is not None
@@ -58,7 +58,7 @@ class Testayga-parserHttpClient:
             mock_client = AsyncMock()
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             await client.close()
             
@@ -72,7 +72,7 @@ class Testayga-parserHttpClient:
             mock_client = AsyncMock()
             MockClient.return_value = mock_client
             
-            async with ayga-parserHttpClient(config=mock_config) as client:
+            async with AygaParserHttpClient(config=mock_config) as client:
                 assert client._client is not None
             
             mock_client.aclose.assert_called_once()
@@ -80,20 +80,20 @@ class Testayga-parserHttpClient:
     @pytest.mark.asyncio
     async def test_ensure_connected_not_connected(self, mock_config):
         """Test _ensure_connected raises error when not connected."""
-        client = ayga-parserHttpClient(config=mock_config)
-        with pytest.raises(ayga-parserHTTPError) as exc_info:
+        client = AygaParserHttpClient(config=mock_config)
+        with pytest.raises(AygaParserHTTPError) as exc_info:
             client._ensure_connected()
         assert "Client not connected" in str(exc_info.value)
 
 
-class Testayga-parserHttpClientRequests:
+class TestAygaParserHttpClientRequests:
     """Test suite for HTTP client requests."""
 
     @pytest.fixture
     async def connected_client(self, mock_config, mock_httpx_client):
         """Create a connected client fixture."""
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             yield client
             await client.close()
@@ -104,7 +104,7 @@ class Testayga-parserHttpClientRequests:
         mock_httpx_client.post.return_value.json.return_value = {"success": 1, "data": "pong"}
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.ping()
             
@@ -117,10 +117,10 @@ class Testayga-parserHttpClientRequests:
         mock_httpx_client.post.return_value.json.return_value = {"success": 0, "error": "Auth failed"}
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
-            with pytest.raises(ayga-parserAPIError):
+            with pytest.raises(AygaParserAPIError):
                 await client.ping()
 
     @pytest.mark.asyncio
@@ -132,7 +132,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.one_request(
                 parser="SE::Google",
@@ -146,18 +146,18 @@ class Testayga-parserHttpClientRequests:
     @pytest.mark.asyncio
     async def test_one_request_validation_empty_parser(self, mock_config):
         """Test oneRequest with empty parser."""
-        client = ayga-parserHttpClient(config=mock_config)
+        client = AygaParserHttpClient(config=mock_config)
         
-        with pytest.raises(ayga-parserValidationError) as exc_info:
+        with pytest.raises(AygaParserValidationError) as exc_info:
             await client.one_request(parser="", query="test")
         assert "Parser name is required" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_one_request_validation_empty_query(self, mock_config):
         """Test oneRequest with empty query."""
-        client = ayga-parserHttpClient(config=mock_config)
+        client = AygaParserHttpClient(config=mock_config)
         
-        with pytest.raises(ayga-parserValidationError) as exc_info:
+        with pytest.raises(AygaParserValidationError) as exc_info:
             await client.one_request(parser="SE::Google", query="")
         assert "Query is required" in str(exc_info.value)
 
@@ -173,7 +173,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_parsers_list()
             
@@ -190,7 +190,7 @@ class Testayga-parserHttpClientRequests:
         }
 
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_parsers_list()
 
@@ -205,7 +205,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_parser_info("SE::Google")
             
@@ -214,9 +214,9 @@ class Testayga-parserHttpClientRequests:
     @pytest.mark.asyncio
     async def test_get_parser_info_validation(self, mock_config):
         """Test getParserInfo with empty parser name."""
-        client = ayga-parserHttpClient(config=mock_config)
+        client = AygaParserHttpClient(config=mock_config)
         
-        with pytest.raises(ayga-parserValidationError) as exc_info:
+        with pytest.raises(AygaParserValidationError) as exc_info:
             await client.get_parser_info("")
         assert "Parser name is required" in str(exc_info.value)
 
@@ -229,7 +229,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_tasks_list()
             
@@ -245,7 +245,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_task_info("task1")
             
@@ -258,7 +258,7 @@ class Testayga-parserHttpClientRequests:
         mock_httpx_client.post.return_value.json.return_value = {"success": 1}
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.cancel_task("task1")
             
@@ -273,7 +273,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_presets_list()
             
@@ -288,7 +288,7 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_config_presets_list()
             
@@ -303,14 +303,14 @@ class Testayga-parserHttpClientRequests:
         }
         
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             result = await client.get_results("task1")
             
             assert "results" in result
 
 
-class Testayga-parserHttpClientErrors:
+class TestAygaParserHttpClientErrors:
     """Test suite for HTTP client error handling."""
 
     @pytest.mark.asyncio
@@ -321,10 +321,10 @@ class Testayga-parserHttpClientErrors:
             mock_client.post.side_effect = httpx.TimeoutException("Connection timeout")
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
-            with pytest.raises(ayga-parserTimeoutError) as exc_info:
+            with pytest.raises(AygaParserTimeoutError) as exc_info:
                 await client.ping()
             assert "timeout" in str(exc_info.value).lower()
 
@@ -345,10 +345,10 @@ class Testayga-parserHttpClientErrors:
             mock_client.post.side_effect = error
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
-            with pytest.raises(ayga-parserHTTPError) as exc_info:
+            with pytest.raises(AygaParserHTTPError) as exc_info:
                 await client.ping()
             assert "500" in str(exc_info.value)
 
@@ -364,10 +364,10 @@ class Testayga-parserHttpClientErrors:
             mock_client.post.return_value = mock_response
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
-            with pytest.raises(ayga-parserHTTPError) as exc_info:
+            with pytest.raises(AygaParserHTTPError) as exc_info:
                 await client.ping()
             assert "Invalid JSON" in str(exc_info.value)
 
@@ -380,9 +380,9 @@ class Testayga-parserHttpClientErrors:
             mock_client = AsyncMock()
             MockClient.return_value = mock_client
             
-            client = ayga-parserHttpClient(config=mock_config)
+            client = AygaParserHttpClient(config=mock_config)
             await client.connect()
             
-            with pytest.raises(ayga-parserAuthError) as exc_info:
+            with pytest.raises(AygaParserAuthError) as exc_info:
                 await client.ping()
             assert "password not configured" in str(exc_info.value)

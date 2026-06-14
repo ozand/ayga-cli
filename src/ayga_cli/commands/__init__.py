@@ -1,4 +1,4 @@
-"""ayga-parser CLI commands."""
+"""ayga_parser CLI commands."""
 
 from ayga_cli.commands.ping import app as ping_app
 from ayga_cli.commands.parsers import app as parsers_app

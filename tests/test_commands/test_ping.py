@@ -23,21 +23,21 @@ class TestPingCommand:
         with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "ayga-parser API responded with pong",
+            "message": "ayga_parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": True,
             "basic_auth_username": "",
         })):
             result = runner.invoke(app, ["ping"])
         assert result.exit_code == 0
-        assert "ayga-parser API responded with pong" in result.output
+        assert "ayga_parser API responded with pong" in result.output
 
     def test_ping_with_host(self):
         """Test ping command with custom host."""
         with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "ayga-parser API responded with pong",
+            "message": "ayga_parser API responded with pong",
             "http_url": "http://example.com:9091/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,
@@ -51,7 +51,7 @@ class TestPingCommand:
         with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "ayga-parser API responded with pong",
+            "message": "ayga_parser API responded with pong",
             "http_url": "http://127.0.0.1:8080/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,
@@ -64,7 +64,7 @@ class TestPingCommand:
         with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "ayga-parser API responded with pong",
+            "message": "ayga_parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": True,
             "basic_auth_username": "",
@@ -80,7 +80,7 @@ class TestPingCommand:
         with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "ayga-parser API responded with pong",
+            "message": "ayga_parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,

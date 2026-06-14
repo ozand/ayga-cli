@@ -1,4 +1,4 @@
-"""Shared fixtures for ayga-parser CLI tests."""
+"""Shared fixtures for ayga_parser CLI tests."""
 
 import pytest
 import asyncio
@@ -8,15 +8,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 @pytest.fixture
 def mock_config():
-    """Mock ayga-parserConfig for testing"""
-    from ayga_cli.config import ayga-parserConfig
+    """Mock AygaParserConfig for testing"""
+    from ayga_cli.config import AygaParserConfig
     from pydantic import SecretStr
-    config = MagicMock(spec=ayga-parserConfig)
+    config = MagicMock(spec=AygaParserConfig)
     config.http_url = "http://localhost:9091/API"
     config.redis_host = "localhost"
     config.redis_port = 6379
-    config.redis_queue = "ayga-parser_redis_api"
-    config.redis_result_queue = "ayga-parser_results"
+    config.redis_queue = "ayga_parser_redis_api"
+    config.redis_result_queue = "ayga_parser_results"
     config.redis_db = 0
     config.redis_ssl = False
     config.redis_password = None
@@ -34,10 +34,10 @@ def mock_config():
 
 
 @pytest.fixture(autouse=True)
-def clear_ayga-parser_env(monkeypatch):
-    """Clear ayga-parser environment variables for test isolation."""
+def clear_ayga_parser_env(monkeypatch):
+    """Clear ayga_parser environment variables for test isolation."""
     for key in list(__import__("os").environ):
-        if key.startswith("ayga-parser_"):
+        if key.startswith("ayga_parser_"):
             monkeypatch.delenv(key, raising=False)
 
 

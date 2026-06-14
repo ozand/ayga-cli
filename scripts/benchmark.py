@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark script for ayga-parser CLI performance testing.
+"""Benchmark script for ayga_parser CLI performance testing.
 
 Tests cache loading, fuzzy search, and command completion times.
 """
@@ -131,7 +131,7 @@ def benchmark_compression(manifest: Manifest) -> dict:
 def main():
     """Run all benchmarks."""
     print("=" * 60)
-    print("ayga-parser CLI Performance Benchmarks")
+    print("ayga_parser CLI Performance Benchmarks")
     print("=" * 60)
 
     # Create test manifest with 1000 parsers

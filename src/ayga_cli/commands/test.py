@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from ayga_cli.client.http import ayga-parserHttpClient
+from ayga_cli.client.http import AygaParserHttpClient
 from ayga_cli.config import get_config
 from ayga_cli.static_manifest import (
     get_parser_defaults,
@@ -55,16 +55,16 @@ def test_cmd(
 
     Examples:
         # Basic test
-        ayga-parser test FreeAI::Perplexity
+        ayga_parser test FreeAI::Perplexity
 
         # Test with custom query
-        ayga-parser test SE::Google --query "machine learning"
+        ayga_parser test SE::Google --query "machine learning"
 
         # Verbose output
-        ayga-parser test FreeAI::Perplexity --verbose
+        ayga_parser test FreeAI::Perplexity --verbose
 
         # JSON output
-        ayga-parser test FreeAI::Perplexity --json
+        ayga_parser test FreeAI::Perplexity --json
     """
     config = get_config()
 
@@ -271,7 +271,7 @@ async def _execute_test(
     # Convert overrides to options format
     options = [{"id": k, "value": v} for k, v in overrides.items()]
 
-    async with ayga-parserHttpClient(config, timeout=timeout) as client:
+    async with AygaParserHttpClient(config, timeout=timeout) as client:
         result = await client.one_request(
             parser=parser,
             query=query,
@@ -387,7 +387,7 @@ def _print_test_failure(test_results: dict, defaults: Optional[Any]) -> None:
             if defaults:
                 for key, value in defaults.default_overrides.items():
                     console.print(f"     --options \"{key}={value}\"")
-            console.print(f"\n  2. Or see examples: [cyan]ayga-parser run {test_results['parser']} --examples[/cyan]")
+            console.print(f"\n  2. Or see examples: [cyan]ayga_parser run {test_results['parser']} --examples[/cyan]")
 
     # Check if proxy error
     if "error" in test_results and "proxy" in test_results["error"].lower():

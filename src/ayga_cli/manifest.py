@@ -1,7 +1,7 @@
-"""Manifest cache and fuzzy search for ayga-parser parsers.
+"""Manifest cache and fuzzy search for ayga_parser parsers.
 
 This module provides:
-- ManifestCache: Manages local cache of ayga-parser manifest with TTL
+- ManifestCache: Manages local cache of ayga_parser manifest with TTL
 - FuzzySearchIndex: Inverted index for fuzzy parser search
 - Manifest models: Pydantic models for manifest data structures
 - StaticManifest: Loads static manifest for offline parser reference
@@ -265,7 +265,7 @@ class ParserInfo(BaseModel):
 
 
 class Manifest(BaseModel):
-    """Complete manifest of all ayga-parser parsers."""
+    """Complete manifest of all ayga_parser parsers."""
 
     version: str = Field(default="2.1.0", description="Manifest schema version")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -299,13 +299,13 @@ class Manifest(BaseModel):
 
 
 class ManifestCache:
-    """Manages local cache of ayga-parser manifest.
+    """Manages local cache of ayga_parser manifest.
 
     The cache is stored as a compressed JSON file at ~/.config/ayga-cli/manifest.json.gz
     with file permissions set to 600 (owner read/write only).
 
     Attributes:
-        config: ayga-parserConfig instance
+        config: AygaParserConfig instance
         cache_path: Path to the cache file
         ttl_hours: Time-to-live in hours (default: 24)
     """
@@ -451,11 +451,11 @@ class ManifestCache:
             Updated Manifest
 
         Raises:
-            ayga-parserAPIError: If API calls fail
-            ayga-parserAuthError: If authentication fails
+            AygaParserAPIError: If API calls fail
+            AygaParserAuthError: If authentication fails
         """
         # Delay import to avoid circular dependency
-        from ayga_cli.client.http import ayga-parserHttpClient
+        from ayga_cli.client.http import AygaParserHttpClient
 
         # Check if sync is needed
         if not force and not self.is_expired() and not self.is_corrupted():
@@ -466,10 +466,10 @@ class ManifestCache:
                 return manifest
 
         if verbose:
-            print("Syncing parser manifest from ayga-parser API...")
+            print("Syncing parser manifest from ayga_parser API...")
 
         # Fetch from API
-        async with ayga-parserHttpClient(self.config) as client:
+        async with AygaParserHttpClient(self.config) as client:
             # Get list of all parsers
             parser_names = await client.get_parsers_list()
 

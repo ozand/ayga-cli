@@ -424,7 +424,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_async_mode(self):
         """Test running parser in async mode."""
-        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue_123"
             MockRedis.return_value = mock_client
@@ -442,7 +442,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_sync_mode(self):
         """Test running parser in sync mode."""
-        with patch("ayga_cli.mcp.server.ayga-parserHttpClient") as MockHttp:
+        with patch("ayga_cli.mcp.server.AygaParserHttpClient") as MockHttp:
             mock_client = AsyncMock()
             mock_client.one_request.return_value = {"data": {"results": []}}
             MockHttp.return_value = mock_client
@@ -459,7 +459,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_options(self):
         """Test running parser with options."""
-        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -476,7 +476,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_from_json_options(self):
         """Test running parser with from_json options."""
-        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -493,7 +493,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_preset(self):
         """Test running parser with custom preset."""
-        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -510,7 +510,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_timeout(self):
         """Test running parser with custom timeout."""
-        with patch("ayga_cli.mcp.server.ayga-parserHttpClient") as MockHttp:
+        with patch("ayga_cli.mcp.server.AygaParserHttpClient") as MockHttp:
             mock_client = AsyncMock()
             mock_client.one_request.return_value = {"data": {"results": []}}
             MockHttp.return_value = mock_client
@@ -527,7 +527,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_error_handling(self):
         """Test error handling in run_parser."""
-        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.side_effect = Exception("Connection failed")
             MockRedis.return_value = mock_client

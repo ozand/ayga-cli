@@ -1,19 +1,19 @@
-"""ayga-parser CLI custom exceptions."""
+"""ayga_parser CLI custom exceptions."""
 
 from typing import Optional
 
 
-class ayga-parserError(Exception):
-    """Base exception for all ayga-parser CLI errors."""
+class ayga_parserError(Exception):
+    """Base exception for all ayga_parser CLI errors."""
     pass
 
 
-class ayga-parserConfigError(ayga-parserError):
+class AygaParserConfigError(ayga_parserError):
     """Configuration-related errors."""
     pass
 
 
-class ayga-parserHTTPError(ayga-parserError):
+class AygaParserHTTPError(ayga_parserError):
     """HTTP API errors.
 
     Attributes:
@@ -47,8 +47,8 @@ class ayga-parserHTTPError(ayga-parserError):
         return " | ".join(parts)
 
 
-class ayga-parserAPIError(ayga-parserError):
-    """ayga-parser API returned an error response.
+class AygaParserAPIError(ayga_parserError):
+    """ayga_parser API returned an error response.
 
     This is raised when the HTTP call succeeds but the API returns
     an error in the response body.
@@ -85,27 +85,27 @@ class ayga-parserAPIError(ayga-parserError):
         return format_error_for_cli(self.error_info, verbose=verbose)
 
 
-class ayga-parserAuthError(ayga-parserError):
+class AygaParserAuthError(ayga_parserError):
     """Authentication/authorization errors."""
     pass
 
 
-class ayga-parserRedisError(ayga-parserError):
+class ayga_parserRedisError(ayga_parserError):
     """Redis connection or operation errors."""
     pass
 
 
-class ayga-parserTimeoutError(ayga-parserError):
+class AygaParserTimeoutError(ayga_parserError):
     """Timeout errors for blocking operations."""
     pass
 
 
-class ayga-parserValidationError(ayga-parserError):
+class AygaParserValidationError(ayga_parserError):
     """Input validation errors."""
     pass
 
 
-class ayga-parserProxyError(ayga-parserAPIError):
+class AygaParserProxyError(AygaParserAPIError):
     """Proxy-related API errors with actionable recommendations."""
 
     def __init__(
@@ -120,6 +120,6 @@ class ayga-parserProxyError(ayga-parserAPIError):
         self.parser_name = parser_name
 
 
-class ayga-parserServerError(ayga-parserAPIError):
+class AygaParserServerError(AygaParserAPIError):
     """Server-side errors (5xx) with context."""
     pass

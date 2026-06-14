@@ -1,4 +1,4 @@
-"""Run command for executing ayga-parser with dry-run and pagination support."""
+"""Run command for executing ayga_parser with dry-run and pagination support."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from rich.json import JSON as RichJSON
 from rich.panel import Panel
 from rich.table import Table
 
-from ayga_cli.client.http import ayga-parserHttpClient
+from ayga_cli.client.http import AygaParserHttpClient
 from ayga_cli.config import get_config
 from ayga_cli.presets import get_preset_manager
 from ayga_cli.static_manifest import (
@@ -27,7 +27,7 @@ from ayga_cli.utils.dry_run import DryRunSimulator
 from ayga_cli.utils.pagination import execute_with_pagination
 
 app = typer.Typer(
-    help="Execute ayga-parser requests",
+    help="Execute ayga_parser requests",
     no_args_is_help=True,
 )
 console = Console()
@@ -121,7 +121,7 @@ def run(
         None,
         "--saved-preset",
         "-s",
-        help="Use saved preset (name from 'ayga-parser presets list')",
+        help="Use saved preset (name from 'ayga_parser presets list')",
     ),
     options: Optional[str] = typer.Option(
         None,
@@ -180,25 +180,25 @@ def run(
 
     Examples:
         # Basic execution
-        ayga-parser run SE::Google "machine learning"
+        ayga_parser run SE::Google "machine learning"
 
         # Use saved preset
-        ayga-parser run "What is AI?" --saved-preset perplexity-business
+        ayga_parser run "What is AI?" --saved-preset perplexity-business
 
         # Dry-run to preview
-        ayga-parser run SE::Google "test" --dry-run
+        ayga_parser run SE::Google "test" --dry-run
 
         # With options
-        ayga-parser run SE::Google "test" --options "pagecount=5,region=us"
+        ayga_parser run SE::Google "test" --options "pagecount=5,region=us"
 
         # Show examples
-        ayga-parser run FreeAI::Perplexity --examples
+        ayga_parser run FreeAI::Perplexity --examples
 
         # Auto-pagination
-        ayga-parser run SE::Google "test" --page-all --max-pages 20
+        ayga_parser run SE::Google "test" --page-all --max-pages 20
 
         # JSON output
-        ayga-parser run SE::Google "test" --json
+        ayga_parser run SE::Google "test" --json
     """
     config = get_config()
 
@@ -240,7 +240,7 @@ def run(
                 }, indent=2))
             else:
                 console.print(f"[red]Error:[/red] {error_msg}")
-                console.print("Use [cyan]ayga-parser presets list[/cyan] to see available presets.")
+                console.print("Use [cyan]ayga_parser presets list[/cyan] to see available presets.")
             raise typer.Exit(code=1)
         parser = preset.parser
         # Start with preset overrides
@@ -293,7 +293,7 @@ def run(
             }, indent=2))
         else:
             console.print(f"[red]Error:[/red] {error_msg}")
-            console.print(f"\n[yellow]Tip:[/yellow] Use [cyan]ayga-parser run {parser} --examples[/cyan] to see usage examples")
+            console.print(f"\n[yellow]Tip:[/yellow] Use [cyan]ayga_parser run {parser} --examples[/cyan] to see usage examples")
         raise typer.Exit(code=1)
 
     # Handle dry-run mode
@@ -434,7 +434,7 @@ async def _execute_single(
     """Execute single parser request."""
     config = get_config()
 
-    async with ayga-parserHttpClient(config, timeout=timeout) as client:
+    async with AygaParserHttpClient(config, timeout=timeout) as client:
         result = await client.one_request(
             parser=parser,
             query=query,
@@ -456,7 +456,7 @@ async def _execute_paginated(
     config = get_config()
 
     async def execute_fn(**kwargs) -> dict:
-        async with ayga-parserHttpClient(config, timeout=timeout) as client:
+        async with AygaParserHttpClient(config, timeout=timeout) as client:
             return await client.one_request(**kwargs)
 
     return await execute_with_pagination(

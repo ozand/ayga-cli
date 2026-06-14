@@ -1,1 +1,1 @@
-"""ayga-parser CLI test suite."""
+"""ayga_parser CLI test suite."""
