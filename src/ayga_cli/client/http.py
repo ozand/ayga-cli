@@ -1,47 +1,47 @@
-"""HTTP API client for ayga-parser."""
+"""HTTP API client for ayga_parser."""
 
 import json
 from typing import Any, Optional
 
 import httpx
 
-from ayga_cli.config import ayga-parserConfig
+from ayga_cli.config import AygaParserConfig
 from ayga_cli.exceptions import (
-    ayga-parserAPIError,
-    ayga-parserAuthError,
-    ayga-parserHTTPError,
-    ayga-parserProxyError,
-    ayga-parserServerError,
-    ayga-parserTimeoutError,
-    ayga-parserValidationError,
+    AygaParserAPIError,
+    AygaParserAuthError,
+    AygaParserHTTPError,
+    AygaParserProxyError,
+    AygaParserServerError,
+    AygaParserTimeoutError,
+    AygaParserValidationError,
 )
 from ayga_cli.utils.error_helper import parse_api_error
 
 
-class ayga-parserHttpClient:
-    """Async HTTP client for ayga-parser API.
+class AygaParserHttpClient:
+    """Async HTTP client for ayga_parser API.
 
-    This client wraps all ayga-parser HTTP API methods using httpx.AsyncClient.
+    This client wraps all ayga_parser HTTP API methods using httpx.AsyncClient.
     It handles authentication, error mapping, and provides typed interfaces
     for all API operations.
 
     Args:
-        config: ayga-parserConfig instance with connection settings
+        config: AygaParserConfig instance with connection settings
         timeout: Request timeout in seconds (overrides config.default_timeout)
 
     Example:
-        >>> config = ayga-parserConfig(password=SecretStr("secret"))
-        >>> client = ayga-parserHttpClient(config)
+        >>> config = AygaParserConfig(password=SecretStr("secret"))
+        >>> client = AygaParserHttpClient(config)
         >>> await client.ping()
         True
     """
 
     def __init__(
         self,
-        config: Optional[ayga-parserConfig] = None,
+        config: Optional[AygaParserConfig] = None,
         timeout: Optional[int] = None,
     ):
-        self.config = config or ayga-parserConfig()
+        self.config = config or AygaParserConfig()
         self.timeout = timeout or self.config.default_timeout
         self._client: Optional[httpx.AsyncClient] = None
         self._basic_auth = self._build_basic_auth()
@@ -54,7 +54,7 @@ class ayga-parserHttpClient:
         username, password = credentials
         return httpx.BasicAuth(username, password)
 
-    async def __aenter__(self) -> "ayga-parserHttpClient":
+    async def __aenter__(self) -> "AygaParserHttpClient":
         """Async context manager entry."""
         await self.connect()
         return self
@@ -85,7 +85,7 @@ class ayga-parserHttpClient:
     def _ensure_connected(self) -> httpx.AsyncClient:
         """Ensure client is connected and return the client instance."""
         if self._client is None:
-            raise ayga-parserHTTPError("Client not connected. Use 'async with' or call connect()")
+            raise AygaParserHTTPError("Client not connected. Use 'async with' or call connect()")
         return self._client
 
     def _build_payload(self, action: str, data: Optional[dict] = None) -> dict:
@@ -100,7 +100,7 @@ class ayga-parserHttpClient:
         """
         password = self.config.get_password()
         if not password:
-            raise ayga-parserAuthError("ayga-parser password not configured")
+            raise AygaParserAuthError("ayga_parser password not configured")
 
         payload: dict[str, Any] = {
             "password": password,
@@ -172,10 +172,10 @@ class ayga-parserHttpClient:
             Parsed JSON response
 
         Raises:
-            ayga-parserHTTPError: For HTTP-level errors
-            ayga-parserAPIError: For API-level errors in response
-            ayga-parserTimeoutError: For timeout errors
-            ayga-parserAuthError: For authentication failures
+            AygaParserHTTPError: For HTTP-level errors
+            AygaParserAPIError: For API-level errors in response
+            AygaParserTimeoutError: For timeout errors
+            AygaParserAuthError: For authentication failures
         """
         client = self._ensure_connected()
         payload = self._build_payload(action, data)
@@ -190,18 +190,18 @@ class ayga-parserHttpClient:
             )
             response.raise_for_status()
         except httpx.TimeoutException as e:
-            raise ayga-parserTimeoutError(
+            raise AygaParserTimeoutError(
                 f"Request timeout after {request_timeout}s for action '{action}'"
             ) from e
         except httpx.HTTPStatusError as e:
-            raise ayga-parserHTTPError(
+            raise AygaParserHTTPError(
                 message=f"HTTP error: {e}",
                 status_code=e.response.status_code,
                 response_body=e.response.text,
                 action=action,
             ) from e
         except httpx.HTTPError as e:
-            raise ayga-parserHTTPError(
+            raise AygaParserHTTPError(
                 message=f"HTTP request failed: {e}",
                 action=action,
             ) from e
@@ -210,7 +210,7 @@ class ayga-parserHttpClient:
         try:
             result = response.json()
         except json.JSONDecodeError as e:
-            raise ayga-parserHTTPError(
+            raise AygaParserHTTPError(
                 message=f"Invalid JSON response: {e}",
                 status_code=response.status_code,
                 response_body=response.text,
@@ -230,7 +230,7 @@ class ayga-parserHttpClient:
 
             # Check for proxy-related errors
             if any(pattern in error_text for pattern in ["proxy", "eof", "connection refused"]):
-                raise ayga-parserProxyError(
+                raise AygaParserProxyError(
                     message=error_info["message"],
                     code=error_code,
                     data=result,
@@ -239,14 +239,14 @@ class ayga-parserHttpClient:
 
             # Check for server errors (5xx)
             if error_code and error_code >= 500:
-                raise ayga-parserServerError(
+                raise AygaParserServerError(
                     message=error_info["message"],
                     code=error_code,
                     data=result,
                     error_info=error_info,
                 )
 
-            raise ayga-parserAPIError(
+            raise AygaParserAPIError(
                 message=error_info["message"],
                 code=error_code,
                 data=result,
@@ -260,14 +260,14 @@ class ayga-parserHttpClient:
     # =================================================================
 
     async def ping(self) -> bool:
-        """Check if ayga-parser API is accessible.
+        """Check if ayga_parser API is accessible.
 
         Returns:
             True if API responds successfully
 
         Raises:
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         result = await self._request("ping")
         data = result.get("data")
@@ -307,14 +307,14 @@ class ayga-parserHttpClient:
             API response containing results
 
         Raises:
-            ayga-parserValidationError: If required parameters are missing
-            ayga-parserTimeoutError: If request times out
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If required parameters are missing
+            AygaParserTimeoutError: If request times out
+            AygaParserAPIError: If API returns an error
         """
         if not parser:
-            raise ayga-parserValidationError("Parser name is required")
+            raise AygaParserValidationError("Parser name is required")
         if not query:
-            raise ayga-parserValidationError("Query is required")
+            raise AygaParserValidationError("Query is required")
 
         data: dict[str, Any] = {
             "parser": parser,
@@ -364,14 +364,14 @@ class ayga-parserHttpClient:
             API response containing results for all queries
 
         Raises:
-            ayga-parserValidationError: If required parameters are missing
-            ayga-parserTimeoutError: If request times out
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If required parameters are missing
+            AygaParserTimeoutError: If request times out
+            AygaParserAPIError: If API returns an error
         """
         if not parser:
-            raise ayga-parserValidationError("Parser name is required")
+            raise AygaParserValidationError("Parser name is required")
         if not queries:
-            raise ayga-parserValidationError("At least one query is required")
+            raise AygaParserValidationError("At least one query is required")
 
         data: dict[str, Any] = {
             "parser": parser,
@@ -401,15 +401,15 @@ class ayga-parserHttpClient:
             - category: Parser category
 
         Raises:
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         try:
             result = await self._request("getParsersList")
             parsers = self._coerce_parsers_list(result.get("data", []))
             if parsers:
                 return parsers
-        except ayga-parserAPIError:
+        except AygaParserAPIError:
             pass
 
         return self._static_parser_list()
@@ -428,12 +428,12 @@ class ayga-parserHttpClient:
             - results: Result field definitions
 
         Raises:
-            ayga-parserValidationError: If parser name is empty
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If parser name is empty
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         if not parser:
-            raise ayga-parserValidationError("Parser name is required")
+            raise AygaParserValidationError("Parser name is required")
 
         data = {"parser": parser}
         result = await self._request("getParserInfo", data)
@@ -444,7 +444,7 @@ class ayga-parserHttpClient:
         active_only: bool = False,
         limit: Optional[int] = None,
     ) -> list[dict]:
-        """Get list of tasks/jobs from ayga-parser.
+        """Get list of tasks/jobs from ayga_parser.
 
         Args:
             active_only: If True, return only active/running tasks
@@ -459,8 +459,8 @@ class ayga-parserHttpClient:
             - created: Creation timestamp
 
         Raises:
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         data: dict[str, Any] = {}
         if active_only:
@@ -481,12 +481,12 @@ class ayga-parserHttpClient:
             Task details including status, progress, and results
 
         Raises:
-            ayga-parserValidationError: If task_id is empty
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If task_id is empty
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         if not task_id:
-            raise ayga-parserValidationError("Task ID is required")
+            raise AygaParserValidationError("Task ID is required")
 
         data = {"taskId": task_id}
         result = await self._request("getTaskInfo", data)
@@ -502,12 +502,12 @@ class ayga-parserHttpClient:
             True if cancellation was successful
 
         Raises:
-            ayga-parserValidationError: If task_id is empty
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If task_id is empty
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         if not task_id:
-            raise ayga-parserValidationError("Task ID is required")
+            raise AygaParserValidationError("Task ID is required")
 
         data = {"taskId": task_id}
         result = await self._request("cancelTask", data)
@@ -523,8 +523,8 @@ class ayga-parserHttpClient:
             - description: Preset description
 
         Raises:
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         result = await self._request("getPresetsList")
         return result.get("data", [])
@@ -536,8 +536,8 @@ class ayga-parserHttpClient:
             List of config preset dictionaries
 
         Raises:
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         result = await self._request("getConfigPresetsList")
         return result.get("data", [])
@@ -561,12 +561,12 @@ class ayga-parserHttpClient:
             Results data in requested format
 
         Raises:
-            ayga-parserValidationError: If task_id is empty
-            ayga-parserHTTPError: If HTTP request fails
-            ayga-parserAPIError: If API returns an error
+            AygaParserValidationError: If task_id is empty
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
         """
         if not task_id:
-            raise ayga-parserValidationError("Task ID is required")
+            raise AygaParserValidationError("Task ID is required")
 
         data: dict[str, Any] = {
             "taskId": task_id,

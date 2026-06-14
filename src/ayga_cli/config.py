@@ -1,4 +1,4 @@
-"""Configuration management for ayga-parser CLI.
+"""Configuration management for ayga_parser CLI.
 
 Implements Pydantic Settings for environment-based configuration
 with OS keyring support for secure password storage.
@@ -68,25 +68,25 @@ def get_keyring_service() -> str:
     return 'ayga-cli'
 
 
-class ayga-parserConfig(BaseSettings):
-    """ayga-parser CLI configuration.
+class AygaParserConfig(BaseSettings):
+    """ayga_parser CLI configuration.
 
     Configuration sources (in order of priority):
-    1. Environment variables (ayga-parser_* prefix)
+    1. Environment variables (ayga_parser_* prefix)
     2. Config file (~/.config/ayga-cli/config.yaml or .env)
     3. OS Keyring (for password)
     4. Default values
 
     Attributes:
-        http_url: ayga-parser HTTP API endpoint.
+        http_url: ayga_parser HTTP API endpoint.
         redis_host: Redis server hostname.
         redis_port: Redis server port.
-        redis_queue: Primary Redis queue name for ayga-parser requests.
+        redis_queue: Primary Redis queue name for ayga_parser requests.
         redis_result_queue: Default queue name for results.
         redis_password: Redis authentication password (if required).
         redis_db: Redis database number.
         redis_ssl: Use SSL/TLS for Redis connection.
-        password: ayga-parser API password (from keyring or env).
+        password: ayga_parser API password (from keyring or env).
         default_timeout: Default request timeout in seconds.
         default_preset: Default parser preset name.
         default_config_preset: Default config preset name.
@@ -94,7 +94,7 @@ class ayga-parserConfig(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="ayga-parser_",
+        env_prefix="ayga_parser_",
         env_file_encoding="utf-8",
         secrets_dir="/run/secrets",  # Linux-specific, Windows/macOS use env vars
         extra="ignore",
@@ -103,7 +103,7 @@ class ayga-parserConfig(BaseSettings):
     # HTTP API Configuration
     http_url: str = Field(
         default="http://127.0.0.1:9091/API",
-        description="ayga-parser HTTP API endpoint URL",
+        description="ayga_parser HTTP API endpoint URL",
     )
     http_basic_username: str = Field(
         default="",
@@ -126,11 +126,11 @@ class ayga-parserConfig(BaseSettings):
         description="Redis server port",
     )
     redis_queue: str = Field(
-        default="ayga-parser_redis_api",
-        description="Primary Redis queue for ayga-parser requests",
+        default="ayga_parser_redis_api",
+        description="Primary Redis queue for ayga_parser requests",
     )
     redis_result_queue: str = Field(
-        default="ayga-parser_results",
+        default="ayga_parser_results",
         description="Default queue name for results",
     )
     redis_password: Optional[SecretStr] = Field(
@@ -147,10 +147,10 @@ class ayga-parserConfig(BaseSettings):
         description="Use SSL/TLS for Redis connection",
     )
 
-    # ayga-parser Authentication
+    # ayga_parser Authentication
     password: Optional[SecretStr] = Field(
         default=None,
-        description="ayga-parser API password (prefer keyring storage)",
+        description="ayga_parser API password (prefer keyring storage)",
     )
 
     # Default Settings
@@ -201,10 +201,10 @@ class ayga-parserConfig(BaseSettings):
         return v.rstrip("/")
 
     def get_password(self) -> Optional[str]:
-        """Get ayga-parser password from config or keyring.
+        """Get ayga_parser password from config or keyring.
 
         Priority:
-        1. Environment variable (ayga-parser_PASSWORD)
+        1. Environment variable (ayga_parser_PASSWORD)
         2. Config file password field
         3. OS Keyring (service: 'ayga-cli', username: 'api')
 
@@ -246,7 +246,7 @@ class ayga-parserConfig(BaseSettings):
         """Store password in OS keyring.
 
         Args:
-            password: The ayga-parser API password to store.
+            password: The ayga_parser API password to store.
 
         Raises:
             RuntimeError: If keyring storage fails.
@@ -294,27 +294,27 @@ class ayga-parserConfig(BaseSettings):
 
 
 @lru_cache(maxsize=1)
-def get_config() -> ayga-parserConfig:
+def get_config() -> AygaParserConfig:
     """Get cached configuration instance.
 
     Returns:
-        ayga-parserConfig instance with loaded settings.
+        AygaParserConfig instance with loaded settings.
 
     Example:
         >>> config = get_config()
         >>> print(config.redis_host)
         '127.0.0.1'
     """
-    return ayga-parserConfig()
+    return AygaParserConfig()
 
 
-def reload_config() -> ayga-parserConfig:
+def reload_config() -> AygaParserConfig:
     """Reload configuration from sources.
 
     Clears the cache and returns a fresh configuration instance.
 
     Returns:
-        Fresh ayga-parserConfig instance.
+        Fresh AygaParserConfig instance.
     """
     get_config.cache_clear()
     return get_config()

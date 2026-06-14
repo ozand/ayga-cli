@@ -1,4 +1,4 @@
-"""Enhanced MCP server for ayga-parser CLI integration.
+"""Enhanced MCP server for ayga_parser CLI integration.
 
 Provides 4 powerful tools for AI agent integration:
 1. search_parsers - Fuzzy search through all available parsers (PRIMARY discovery tool)
@@ -20,9 +20,9 @@ from typing import Any, Optional
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
-from ayga_cli.client.http import ayga-parserHttpClient
-from ayga_cli.client.redis import ayga-parserRedisClient
-from ayga_cli.config import ayga-parserConfig
+from ayga_cli.client.http import AygaParserHttpClient
+from ayga_cli.client.redis import AygaParserRedisClient
+from ayga_cli.config import AygaParserConfig
 from ayga_cli.manifest import (
     ManifestCache,
     FuzzySearchIndex,
@@ -32,7 +32,7 @@ from ayga_cli.manifest import (
 
 # Initialize MCP server with enhanced instructions
 mcp = Server(
-    "ayga-parser-mcp-v2",
+    "ayga_parser-mcp-v2",
     instructions="""
 Universal data collection tool with 150+ parsers (Search, AI, Social, WHOIS).
 
@@ -55,7 +55,7 @@ Examples:
 
 @mcp.list_tools()
 async def list_tools() -> list[Tool]:
-    """List available ayga-parser MCP tools."""
+    """List available ayga_parser MCP tools."""
     return [
         Tool(
             name="search_parsers",
@@ -226,7 +226,7 @@ Returns:
 
 @mcp.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
-    """Execute an ayga-parser MCP tool."""
+    """Execute an ayga_parser MCP tool."""
     if name == "search_parsers":
         result = await _search_parsers(
             query=arguments.get("query", ""),
@@ -281,7 +281,7 @@ async def _search_parsers(
         if not manifest:
             return {
                 "success": False,
-                "error": "No manifest found. Run 'ayga-parser parsers sync' first.",
+                "error": "No manifest found. Run 'ayga_parser parsers sync' first.",
                 "results": [],
             }
 
@@ -336,7 +336,7 @@ async def _get_parser_schema(parser: str) -> dict:
         if not manifest:
             return {
                 "success": False,
-                "error": "No manifest found. Run 'ayga-parser parsers sync' first.",
+                "error": "No manifest found. Run 'ayga_parser parsers sync' first.",
             }
 
         parser_info = manifest.get_parser(parser)
@@ -402,7 +402,7 @@ async def _validate_parser_call(
             return {
                 "success": False,
                 "valid": False,
-                "error": "No manifest found. Run 'ayga-parser parsers sync' first.",
+                "error": "No manifest found. Run 'ayga_parser parsers sync' first.",
             }
 
         parser_info = manifest.get_parser(parser)
@@ -516,8 +516,8 @@ async def _run_parser(
     timeout: int = 300,
     options: Optional[dict] = None,
 ) -> dict:
-    """Execute parsing job via ayga-parser."""
-    config = ayga-parserConfig()
+    """Execute parsing job via ayga_parser."""
+    config = AygaParserConfig()
 
     # Extract options list if provided
     options_list = None
@@ -532,7 +532,7 @@ async def _run_parser(
 
     if async_mode:
         # Async mode: Redis queue (non-blocking)
-        client = ayga-parserRedisClient(
+        client = AygaParserRedisClient(
             redis_host=config.redis_host,
             redis_port=config.redis_port,
             redis_queue=config.redis_queue,
@@ -564,7 +564,7 @@ async def _run_parser(
             await client.close()
     else:
         # Sync mode: HTTP direct (blocking)
-        client = ayga-parserHttpClient(config)
+        client = AygaParserHttpClient(config)
 
         try:
             await client.connect()

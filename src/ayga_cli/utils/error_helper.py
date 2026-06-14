@@ -1,4 +1,4 @@
-"""Error parsing and recommendations for ayga-parser API errors."""
+"""Error parsing and recommendations for ayga_parser API errors."""
 
 from typing import Optional
 
@@ -7,52 +7,52 @@ ERROR_PATTERNS = {
     "Proxy: Error: Read error: EOF": {
         "message": "Proxy connection failed",
         "recommendation": "Try specifying proxyChecker override",
-        "example": 'ayga-parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
+        "example": 'ayga_parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
     },
     "HTTPS(C) Proxy: Error: EOF": {
         "message": "Proxy connection failed",
         "recommendation": "Try specifying proxyChecker override",
-        "example": 'ayga-parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
+        "example": 'ayga_parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
     },
     "Proxy: Error: Connection refused": {
         "message": "Proxy connection refused",
         "recommendation": "The proxy server is not accepting connections. Try a different proxy or proxyChecker",
-        "example": 'ayga-parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
+        "example": 'ayga_parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
     },
     "500 Internal Server Error": {
         "message": "Server error (possibly proxy-related)",
         "recommendation": "Check proxy settings or try different proxyChecker",
-        "docs_link": "https://ayga-parser.com/docs",
+        "docs_link": "https://ayga_parser.com/docs",
     },
     "timeout": {
         "message": "Request timed out",
         "recommendation": "Increase timeout override",
-        "example": 'ayga-parser run ... --overrides "timeout=180"',
+        "example": 'ayga_parser run ... --overrides "timeout=180"',
     },
     "Timeout": {
         "message": "Request timed out",
         "recommendation": "Increase timeout override",
-        "example": 'ayga-parser run ... --overrides "timeout=180"',
+        "example": 'ayga_parser run ... --overrides "timeout=180"',
     },
     "Connection timeout": {
         "message": "Connection timed out",
         "recommendation": "Increase timeout override or check network connectivity",
-        "example": 'ayga-parser run ... --overrides "timeout=180"',
+        "example": 'ayga_parser run ... --overrides "timeout=180"',
     },
     "Read timeout": {
         "message": "Read operation timed out",
         "recommendation": "Increase timeout override",
-        "example": 'ayga-parser run ... --overrides "timeout=180"',
+        "example": 'ayga_parser run ... --overrides "timeout=180"',
     },
     "Unauthorized": {
         "message": "Authentication failed",
-        "recommendation": "Check your ayga-parser password configuration",
-        "example": "ayga-parser config set password YOUR_PASSWORD",
+        "recommendation": "Check your ayga_parser password configuration",
+        "example": "ayga_parser config set password YOUR_PASSWORD",
     },
     "Invalid parser": {
         "message": "Parser not found or invalid",
-        "recommendation": "Check parser name or use 'ayga-parser parsers list-static' to see available parsers",
-        "example": "ayga-parser parsers info FreeAI::Perplexity",
+        "recommendation": "Check parser name or use 'ayga_parser parsers list-static' to see available parsers",
+        "example": "ayga_parser parsers info FreeAI::Perplexity",
     },
     "rate limit": {
         "message": "Rate limit exceeded",
@@ -66,11 +66,11 @@ ERROR_PATTERNS = {
 
 # Parser-specific documentation links
 PARSER_DOCS = {
-    "FreeAI::Perplexity": "https://ayga-parser.com/docs/parsers/freeai-perplexity",
-    "FreeAI::ChatGPT": "https://ayga-parser.com/docs/parsers/freeai-chatgpt",
-    "SE::Google": "https://ayga-parser.com/docs/parsers/se-google",
-    "SE::Yandex": "https://ayga-parser.com/docs/parsers/se-yandex",
-    "Net::Whois": "https://ayga-parser.com/docs/parsers/net-whois",
+    "FreeAI::Perplexity": "https://ayga_parser.com/docs/parsers/freeai-perplexity",
+    "FreeAI::ChatGPT": "https://ayga_parser.com/docs/parsers/freeai-chatgpt",
+    "SE::Google": "https://ayga_parser.com/docs/parsers/se-google",
+    "SE::Yandex": "https://ayga_parser.com/docs/parsers/se-yandex",
+    "Net::Whois": "https://ayga_parser.com/docs/parsers/net-whois",
 }
 
 
@@ -135,7 +135,7 @@ def parse_api_error(response_data: dict, parser_name: Optional[str] = None) -> d
 
     # General documentation link as fallback
     if not result["docs_link"]:
-        result["docs_link"] = "https://ayga-parser.com/docs"
+        result["docs_link"] = "https://ayga_parser.com/docs"
 
     return result
 

@@ -1,7 +1,7 @@
 """
-Redis Queue Client for ayga-parser async operations.
+Redis Queue Client for ayga_parser async operations.
 
-Provides async Redis-based communication with ayga-parser instances,
+Provides async Redis-based communication with ayga_parser instances,
 implementing the primary transport layer for job queuing and result retrieval.
 """
 
@@ -17,28 +17,28 @@ from redis.asyncio import Redis
 logger = logging.getLogger(__name__)
 
 
-class ayga-parserRedisClient:
+class AygaParserRedisClient:
     """
-    Async Redis client for ayga-parser queue operations.
+    Async Redis client for ayga_parser queue operations.
 
     Implements lazy connection to Redis and provides methods for:
-    - Pushing jobs to ayga-parser queue (LPUSH)
+    - Pushing jobs to ayga_parser queue (LPUSH)
     - Retrieving results from result queues (BLPOP)
     - Checking queue depths
 
     Args:
         redis_host: Redis server hostname (default: 127.0.0.1)
         redis_port: Redis server port (default: 6379)
-        redis_queue: Main ayga-parser queue name (default: ayga-parser_redis_api)
+        redis_queue: Main ayga_parser queue name (default: ayga_parser_redis_api)
         redis_password: Optional Redis AUTH password
-        password: ayga-parser API password for request authentication
+        password: ayga_parser API password for request authentication
     """
 
     def __init__(
         self,
         redis_host: str = "127.0.0.1",
         redis_port: int = 6379,
-        redis_queue: str = "ayga-parser_redis_api",
+        redis_queue: str = "ayga_parser_redis_api",
         redis_password: Optional[str] = None,
         password: Optional[str] = None,
     ) -> None:
@@ -74,7 +74,7 @@ class ayga-parserRedisClient:
             self._redis = None
             logger.debug("Redis connection closed")
 
-    async def __aenter__(self) -> ayga-parserRedisClient:
+    async def __aenter__(self) -> AygaParserRedisClient:
         """Async context manager entry."""
         return self
 
@@ -92,7 +92,7 @@ class ayga-parserRedisClient:
         options: Optional[list[dict[str, Any]]] = None,
     ) -> dict[str, Any]:
         """
-        Build ayga-parser request payload.
+        Build ayga_parser request payload.
 
         Args:
             parser: Parser name (e.g., "SE::Google")
@@ -103,7 +103,7 @@ class ayga-parserRedisClient:
             options: List of option overrides
 
         Returns:
-            dict: Formatted request payload for ayga-parser
+            dict: Formatted request payload for ayga_parser
         """
         data: dict[str, Any] = {
             "parser": parser,
@@ -134,17 +134,17 @@ class ayga-parserRedisClient:
         options: Optional[list[dict[str, Any]]] = None,
     ) -> str:
         """
-        Push a job to the ayga-parser Redis queue.
+        Push a job to the ayga_parser Redis queue.
 
-        Uses LPUSH to add the job to the main ayga-parser queue.
-        ayga-parser will process it and push results to the specified result queue.
+        Uses LPUSH to add the job to the main ayga_parser queue.
+        ayga_parser will process it and push results to the specified result queue.
 
         Args:
             parser: Parser name (e.g., "SE::Google", "Net::Whois")
             query: Search query, URL, or target to parse
             preset: Parser preset name (default: "default")
             config_preset: Config preset for thread pool settings (default: "default")
-            result_queue: Custom result queue name. If None, ayga-parser uses default.
+            result_queue: Custom result queue name. If None, ayga_parser uses default.
             options: List of option overrides, e.g., [{"id": "pagecount", "value": 5}]
 
         Returns:
@@ -155,7 +155,7 @@ class ayga-parserRedisClient:
             ValueError: If parser or query is empty
 
         Example:
-            >>> client = ayga-parserRedisClient(password="secret")
+            >>> client = AygaParserRedisClient(password="secret")
             >>> result_queue = await client.push(
             ...     parser="SE::Google",
             ...     query="python async",
@@ -184,7 +184,7 @@ class ayga-parserRedisClient:
 
         await r.lpush(self.redis_queue, request_json)
 
-        actual_result_queue = result_queue or f"ayga-parser_results_{parser.replace('::', '_')}"
+        actual_result_queue = result_queue or f"ayga_parser_results_{parser.replace('::', '_')}"
 
         logger.debug(
             f"Pushed job to queue '{self.redis_queue}': "
@@ -217,7 +217,7 @@ class ayga-parserRedisClient:
             ValueError: If result_queue is empty
 
         Example:
-            >>> client = ayga-parserRedisClient(password="secret")
+            >>> client = AygaParserRedisClient(password="secret")
             >>> result = await client.pop("my_results", timeout=60)
             >>> if result:
             ...     print(f"Got {len(result.get('results', []))} results")
@@ -263,8 +263,8 @@ class ayga-parserRedisClient:
             ValueError: If queue_name is empty
 
         Example:
-            >>> client = ayga-parserRedisClient(password="secret")
-            >>> pending = await client.queue_depth("ayga-parser_redis_api")
+            >>> client = AygaParserRedisClient(password="secret")
+            >>> pending = await client.queue_depth("ayga_parser_redis_api")
             >>> print(f"{pending} jobs waiting to be processed")
         """
         if not queue_name:

@@ -1,7 +1,7 @@
 """Dry-run utilities for previewing API calls without execution.
 
 Provides functionality to preview execution plans and validate payloads
-before sending to ayga-parser API.
+before sending to ayga_parser API.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ class DryRunSimulator:
         self.options = options or []
         self.transport = transport
         self.config = config
-        self.result_queue = f"ayga-parser_result_{uuid4().hex[:8]}"
+        self.result_queue = f"ayga_parser_result_{uuid4().hex[:8]}"
 
     def build_payload(self) -> dict[str, Any]:
         """Build the actual API payload that would be sent.
@@ -116,7 +116,7 @@ class DryRunSimulator:
         if self.transport == "redis":
             return {
                 "type": "redis",
-                "queue": "ayga-parser_redis_api",
+                "queue": "ayga_parser_redis_api",
                 "result_queue": self.result_queue,
                 "pattern": "LPUSH request -> BLPOP result",
             }
@@ -142,7 +142,7 @@ class DryRunSimulator:
                 "preset": self.preset,
                 "options": self._options_to_dict(),
                 "transport": self.transport,
-                "queue": "ayga-parser_redis_api" if self.transport == "redis" else None,
+                "queue": "ayga_parser_redis_api" if self.transport == "redis" else None,
                 "result_queue": self.result_queue if self.transport == "redis" else None,
                 "estimated_time": self.estimate_time(),
                 "api_payload": self.build_payload(),

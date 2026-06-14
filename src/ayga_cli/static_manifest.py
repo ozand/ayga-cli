@@ -1,4 +1,4 @@
-"""Static manifest with popular ayga-parser parsers and their defaults.
+"""Static manifest with popular ayga_parser parsers and their defaults.
 
 This module provides a static manifest of commonly used parsers with their
 required overrides and default configurations. Used when API manifest is
@@ -337,9 +337,9 @@ def format_example(parser: str, example: dict[str, str]) -> str:
     overrides = example.get("overrides", "")
 
     if overrides:
-        return f'ayga-parser run {parser} "{query}" --options "{overrides}"'
+        return f'ayga_parser run {parser} "{query}" --options "{overrides}"'
     else:
-        return f'ayga-parser run {parser} "{query}"'
+        return f'ayga_parser run {parser} "{query}"'
 
 
 def get_all_categories() -> list[str]:

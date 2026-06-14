@@ -1,4 +1,4 @@
-"""MCP server for ayga-parser CLI."""
+"""MCP server for ayga_parser CLI."""
 
 from .server import mcp
 

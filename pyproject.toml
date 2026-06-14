@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ayga-cli"
 version = "0.1.0"
-description = "ayga-parser CLI Tool with Redis and HTTP API support"
+description = "ayga_parser CLI Tool with Redis and HTTP API support"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
     {name = "Gubin", email = "gubin@ayga.tech"}
 ]
-keywords = ["ayga-parser", "cli", "scraping", "redis", "mcp"]
+keywords = ["ayga_parser", "cli", "scraping", "redis", "mcp"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -46,8 +46,8 @@ mcp = [
 ]
 
 [project.scripts]
-ayga-parser = "ayga_cli.main:app"
-ayga-parser-mcp = "ayga_cli.mcp.server:main"
+ayga_parser = "ayga_cli.main:app"
+ayga_parser-mcp = "ayga_cli.mcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,4 +1,4 @@
-"""Utility modules for ayga-parser CLI."""
+"""Utility modules for ayga_parser CLI."""
 
 from ayga_cli.utils.dry_run import DryRunSimulator, print_dry_run_summary
 from ayga_cli.utils.error_helper import (

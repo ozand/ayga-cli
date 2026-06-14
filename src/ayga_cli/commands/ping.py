@@ -1,4 +1,4 @@
-"""Ping command to test HTTP connection to ayga-parser."""
+"""Ping command to test HTTP connection to ayga_parser."""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from ayga_cli.client.http import ayga-parserHttpClient
-from ayga_cli.config import ayga-parserConfig, get_config
+from ayga_cli.client.http import AygaParserHttpClient
+from ayga_cli.config import AygaParserConfig, get_config
 
-app = typer.Typer(help="Test HTTP connection to ayga-parser")
+app = typer.Typer(help="Test HTTP connection to ayga_parser")
 console = Console()
 
 
@@ -28,15 +28,15 @@ def _normalize_api_url(host: str, port: Optional[int]) -> str:
     return f"{base}/API"
 
 
-async def _ping_backend(config: ayga-parserConfig, timeout: int) -> dict[str, Any]:
+async def _ping_backend(config: AygaParserConfig, timeout: int) -> dict[str, Any]:
     """Perform a real ping request against the configured backend."""
-    async with ayga-parserHttpClient(config=config, timeout=timeout) as client:
+    async with AygaParserHttpClient(config=config, timeout=timeout) as client:
         ok = await client.ping()
         auth = config.get_http_basic_auth()
         return {
             "status": "ok" if ok else "error",
             "reachable": ok,
-            "message": "ayga-parser API responded with pong" if ok else "ayga-parser API did not return pong",
+            "message": "ayga_parser API responded with pong" if ok else "ayga_parser API did not return pong",
             "http_url": config.http_url,
             "basic_auth_enabled": bool(auth),
             "basic_auth_username": auth[0] if auth else None,
@@ -45,12 +45,12 @@ async def _ping_backend(config: ayga-parserConfig, timeout: int) -> dict[str, An
 
 @app.callback(invoke_without_command=True)
 def ping(
-    host: Optional[str] = typer.Option(None, "--host", help="Override ayga-parser HTTP host or full API URL"),
-    port: Optional[int] = typer.Option(None, "--port", help="Override ayga-parser HTTP port when --host is a base host"),
+    host: Optional[str] = typer.Option(None, "--host", help="Override ayga_parser HTTP host or full API URL"),
+    port: Optional[int] = typer.Option(None, "--port", help="Override ayga_parser HTTP port when --host is a base host"),
     timeout: int = typer.Option(5, "--timeout", "-t", help="Connection timeout in seconds"),
     format_json: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
-    """Test HTTP connection and auth against the configured ayga-parser server."""
+    """Test HTTP connection and auth against the configured ayga_parser server."""
     config = get_config().model_copy(deep=True)
 
     if host:
@@ -79,7 +79,7 @@ def ping(
 
         panel = Panel(
             "\n".join([str(status_text), str(message), *details]),
-            title="ayga-parser Ping",
+            title="ayga_parser Ping",
             border_style="green",
         )
         console.print(panel)
@@ -96,7 +96,7 @@ def ping(
         else:
             panel = Panel(
                 f"[bold red]FAILED[/bold red]\n{exc}\nURL: {config.http_url}",
-                title="ayga-parser Ping",
+                title="ayga_parser Ping",
                 border_style="red",
             )
             console.print(panel)

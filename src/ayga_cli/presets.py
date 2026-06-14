@@ -1,4 +1,4 @@
-"""Presets management for ayga-parser CLI.
+"""Presets management for ayga_parser CLI.
 
 Provides a system for saving and loading parser presets with override configurations.
 Presets are stored in ~/.config/ayga-cli/presets.json
@@ -48,7 +48,7 @@ class Preset:
         )
 
     def build_options(self) -> list[dict[str, Any]]:
-        """Convert overrides to ayga-parser options format.
+        """Convert overrides to ayga_parser options format.
 
         Returns:
             List of option dictionaries for API calls

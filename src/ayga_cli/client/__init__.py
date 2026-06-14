@@ -1,5 +1,5 @@
-"""ayga-parser API clients."""
+"""ayga_parser API clients."""
 
-from .http import ayga-parserHttpClient
+from .http import AygaParserHttpClient
 
-__all__ = ["ayga-parserHttpClient"]
+__all__ = ["AygaParserHttpClient"]
