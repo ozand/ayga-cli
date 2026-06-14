@@ -1,25 +1,25 @@
-# A-Parser CLI v2.3 — Windows Cross-Platform Plan
+# ayga-parser CLI v2.3 — Windows Cross-Platform Plan
 
 **Date:** 2026-03-09  
 **Target:** Windows 10/11 + Linux + macOS  
-**Goal:** Агенты на Windows могут использовать aparser-cli через MCP или CLI
+**Goal:** Агенты на Windows могут использовать ayga-cli через MCP или CLI
 
 ---
 
 ## 📊 Текущая архитектура
 
 ```
-aparser-cli/
-├── src/aparser_cli/
+ayga-cli/
+├── src/ayga_cli/
 │   ├── main.py              # Typer CLI entry point
 │   ├── config.py            # Pydantic settings
 │   ├── manifest.py          # Dynamic parser discovery
 │   ├── commands/            # CLI commands (run, test, etc.)
-│   ├── client/              # A-Parser API client
+│   ├── client/              # ayga-parser API client
 │   ├── mcp/                 # MCP server
 │   └── utils/               # Helpers
 ├── pyproject.toml           # Build config
-└── .env                     # Config (APARSER_URL, APARSER_PASSWORD)
+└── .env                     # Config (ayga-parser_URL, ayga-parser_PASSWORD)
 ```
 
 **Зависимости:**
@@ -42,14 +42,14 @@ from pathlib import Path
 
 def get_config_dir():
     if sys.platform == 'win32':
-        # Windows: %APPDATA%\aparser-cli
-        return Path.home() / 'AppData' / 'Roaming' / 'aparser-cli'
+        # Windows: %APPDATA%\ayga-cli
+        return Path.home() / 'AppData' / 'Roaming' / 'ayga-cli'
     elif sys.platform == 'darwin':
         # macOS: ~/Library/Application Support
-        return Path.home() / 'Library' / 'Application Support' / 'aparser-cli'
+        return Path.home() / 'Library' / 'Application Support' / 'ayga-cli'
     else:
-        # Linux: ~/.config/aparser-cli
-        return Path.home() / '.config' / 'aparser-cli'
+        # Linux: ~/.config/ayga-cli
+        return Path.home() / '.config' / 'ayga-cli'
 ```
 
 ### 2. **Keyring на Windows**
@@ -87,13 +87,13 @@ config_path = get_config_dir() / 'config.json'
 
 ```bash
 # Сборка для Windows
-pyinstaller --onefile --name aparser src/aparser_cli/main.py
-pyinstaller --onefile --name aparser-mcp src/aparser_cli/mcp/server.py
+pyinstaller --onefile --name ayga-parser src/ayga_cli/main.py
+pyinstaller --onefile --name ayga-parser-mcp src/ayga_cli/mcp/server.py
 ```
 
 **Результат:**
-- `aparser.exe` — CLI для пользователей
-- `aparser-mcp.exe` — MCP server для агентов
+- `ayga-parser.exe` — CLI для пользователей
+- `ayga-parser-mcp.exe` — MCP server для агентов
 
 **Преимущества:**
 - ✅ Не требует Python
@@ -113,12 +113,12 @@ pyinstaller --onefile --name aparser-mcp src/aparser_cli/mcp/server.py
 twine upload dist/*
 
 # Установка пользователем
-pip install aparser-cli
+pip install ayga-cli
 ```
 
 **Результат:**
-- `aparser` — доступно в PATH
-- `aparser-mcp` — доступно в PATH
+- `ayga-parser` — доступно в PATH
+- `ayga-parser-mcp` — доступно в PATH
 
 **Преимущества:**
 - ✅ Стандартный способ
@@ -138,12 +138,12 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY . .
 RUN pip install -e .
-ENTRYPOINT ["aparser"]
+ENTRYPOINT ["ayga-parser"]
 ```
 
 **Результат:**
 ```bash
-docker run -e APARSER_URL=http://host:8080 aparser-cli run "query"
+docker run -e ayga-parser_URL=http://host:8080 ayga-cli run "query"
 ```
 
 **Преимущества:**
@@ -161,7 +161,7 @@ docker run -e APARSER_URL=http://host:8080 aparser-cli run "query"
 
 ### Phase 1: Конфигурация (30 мин)
 - [ ] Создать `get_config_dir()` для всех платформ
-- [ ] Переместить `.env` → `%APPDATA%\aparser-cli\.env`
+- [ ] Переместить `.env` → `%APPDATA%\ayga-cli\.env`
 - [ ] Добавить валидацию конфига
 
 ### Phase 2: MCP Server (30 мин)
@@ -190,29 +190,29 @@ docker run -e APARSER_URL=http://host:8080 aparser-cli run "query"
 # https://python.org/downloads
 
 # 2. Клонировать репозиторий
-git clone https://github.com/your-org/aparser-cli
-cd aparser-cli
+git clone https://github.com/your-org/ayga-cli
+cd ayga-cli
 
 # 3. Установить
 pip install -e .
 
 # 4. Настроить
-notepad $env:APPDATA\aparser-cli\.env
-# APARSER_URL=http://localhost:8080
-# APARSER_PASSWORD=123
+notepad $env:APPDATA\ayga-cli\.env
+# ayga-parser_URL=http://localhost:8080
+# ayga-parser_PASSWORD=123
 
 # 5. Использовать
-aparser run "query"
+ayga-parser run "query"
 ```
 
 ### Для пользователей агентов
 
 ```powershell
 # 1. Установить
-pip install aparser-cli
+pip install ayga-cli
 
 # 2. Настроить один раз
-aparser init
+ayga-parser init
 
 # 3. Агент использует через MCP
 # Автоматически доступно в Claude Code / Cursor / etc.
@@ -228,8 +228,8 @@ aparser init
 // ~/.claude/settings.json
 {
   "mcpServers": {
-    "aparser": {
-      "command": "aparser-mcp",
+    "ayga-parser": {
+      "command": "ayga-parser-mcp",
       "args": []
     }
   }
@@ -243,8 +243,8 @@ aparser init
 {
   "servers": [
     {
-      "name": "aparser",
-      "command": "aparser-mcp"
+      "name": "ayga-parser",
+      "command": "ayga-parser-mcp"
     }
   ]
 }
@@ -255,7 +255,7 @@ aparser init
 ```python
 from mcp import ClientSession
 
-async with ClientSession('aparser-mcp') as session:
+async with ClientSession('ayga-parser-mcp') as session:
     result = await session.call_tool('run_parser', {
         'parser': 'FreeAI::Perplexity',
         'query': 'OpenClaw competitors'

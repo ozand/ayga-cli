@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from aparser_cli.main import app
+from ayga_cli.main import app
 
 runner = CliRunner()
 

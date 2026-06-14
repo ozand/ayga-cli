@@ -1,7 +1,7 @@
-# A-Parser CLI v2.1 - Integration Report
+# ayga-parser CLI v2.1 - Integration Report
 
 ## Summary
-Successfully integrated all 4 subagent outputs into a working A-Parser CLI v2.1 with:
+Successfully integrated all 4 subagent outputs into a working ayga-parser CLI v2.1 with:
 - **141 tests passing** (100% success rate)
 - All major features functional
 - MCP server with 4 tools operational
@@ -9,12 +9,12 @@ Successfully integrated all 4 subagent outputs into a working A-Parser CLI v2.1 
 ## Files Merged/Modified
 
 ### Core Files
-1. **src/aparser_cli/manifest.py** - Fixed duplicate function definitions, unified cache singleton pattern
-2. **src/aparser_cli/mcp/server.py** - Updated to use synchronous manifest loading with FuzzySearchIndex
-3. **src/aparser_cli/commands/parsers.py** - Parser management commands (list, info, sync, search, categories, cache)
-4. **src/aparser_cli/commands/run.py** - Dynamic run command with dry-run and pagination
-5. **src/aparser_cli/utils/dry_run.py** - Dry-run simulator for previewing API calls
-6. **src/aparser_cli/utils/pagination.py** - Pagination handler for auto-fetching multi-page results
+1. **src/ayga_cli/manifest.py** - Fixed duplicate function definitions, unified cache singleton pattern
+2. **src/ayga_cli/mcp/server.py** - Updated to use synchronous manifest loading with FuzzySearchIndex
+3. **src/ayga_cli/commands/parsers.py** - Parser management commands (list, info, sync, search, categories, cache)
+4. **src/ayga_cli/commands/run.py** - Dynamic run command with dry-run and pagination
+5. **src/ayga_cli/utils/dry_run.py** - Dry-run simulator for previewing API calls
+6. **src/ayga_cli/utils/pagination.py** - Pagination handler for auto-fetching multi-page results
 
 ### Test Files Updated
 1. **tests/test_manifest.py** - Fixed tests to use new FuzzySearchIndex API
@@ -24,13 +24,13 @@ Successfully integrated all 4 subagent outputs into a working A-Parser CLI v2.1 
 ## Key Features Verified
 
 ### CLI Commands
-- ✅ `aparser parsers list` - List all parsers with category filtering
-- ✅ `aparser parsers info` - Get detailed parser information
-- ✅ `aparser parsers sync` - Sync manifest from A-Parser API
-- ✅ `aparser parsers search` - Fuzzy search for parsers
-- ✅ `aparser parsers categories` - List all categories
-- ✅ `aparser parsers cache` - Cache management
-- ✅ `aparser run` - Execute parsers with dry-run and pagination
+- ✅ `ayga-parser parsers list` - List all parsers with category filtering
+- ✅ `ayga-parser parsers info` - Get detailed parser information
+- ✅ `ayga-parser parsers sync` - Sync manifest from ayga-parser API
+- ✅ `ayga-parser parsers search` - Fuzzy search for parsers
+- ✅ `ayga-parser parsers categories` - List all categories
+- ✅ `ayga-parser parsers cache` - Cache management
+- ✅ `ayga-parser run` - Execute parsers with dry-run and pagination
 
 ### MCP Server Tools
 - ✅ `search_parsers` - Fuzzy search through available parsers
@@ -59,7 +59,7 @@ All warnings are from pydantic-settings (expected, not errors).
 
 ## Project Structure
 ```
-src/aparser_cli/
+src/ayga_cli/
 ├── manifest.py          # ManifestCache, FuzzySearchIndex, models
 ├── commands/
 │   ├── parsers.py       # Parser management commands

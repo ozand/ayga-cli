@@ -1,23 +1,23 @@
 # Business Requirements Document (BRD)
-# A-Parser CLI Tool & AYGA MCP Integration
+# ayga-parser CLI Tool & AYGA MCP Integration
 
 **Version:** 1.0  
 **Date:** 2026-03-07  
 **Status:** In Development  
-**Epic:** P-XXX (A-Parser CLI)  
+**Epic:** P-XXX (ayga-parser CLI)  
 
 ---
 
 ## 1. Executive Summary
 
 ### 1.1 Problem Statement
-Current A-Parser integration requires manual HTTP API calls or PHP clients. No modern CLI tool exists for:
+Current ayga-parser integration requires manual HTTP API calls or PHP clients. No modern CLI tool exists for:
 - Queue-based asynchronous parsing (Redis)
 - Integration with AI agent pipelines (AYGA MCP)
 - Automated, scriptable parsing workflows
 
 ### 1.2 Solution
-A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and HTTP (fallback) modes, with native AYGA MCP integration.
+ayga-parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and HTTP (fallback) modes, with native AYGA MCP integration.
 
 ### 1.3 Success Metrics
 | Metric | Target | Measurement |
@@ -63,7 +63,7 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 - **Description:** Submit parsing jobs via Redis LPUSH
 - **Priority:** P0
 - **Acceptance Criteria:**
-  - [ ] `aparser redis push <parser> <query>` submits job
+  - [ ] `ayga-parser redis push <parser> <query>` submits job
   - [ ] Returns unique queryId immediately
   - [ ] Supports batch file input (`--file`)
   - [ ] Configurable output queue (`--output-queue`)
@@ -72,7 +72,7 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 - **Description:** Retrieve results via Redis BLPOP
 - **Priority:** P0
 - **Acceptance Criteria:**
-  - [ ] `aparser redis pop <queue>` retrieves result
+  - [ ] `ayga-parser redis pop <queue>` retrieves result
   - [ ] Blocking wait with timeout (`--wait`, `--timeout`)
   - [ ] Auto-parse JSON results
   - [ ] Support multiple output formats (table, json, csv)
@@ -81,7 +81,7 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 - **Description:** Direct HTTP API when Redis unavailable
 - **Priority:** P1
 - **Acceptance Criteria:**
-  - [ ] `aparser http request <parser> <query>`
+  - [ ] `ayga-parser http request <parser> <query>`
   - [ ] All 17 HTTP methods supported
   - [ ] Automatic fallback from Redis mode
   - [ ] Same output format as Redis mode
@@ -90,17 +90,17 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 - **Description:** Monitor and manage parsing tasks
 - **Priority:** P1
 - **Acceptance Criteria:**
-  - [ ] `aparser task status <queryId>`
-  - [ ] `aparser task list` (active/completed)
-  - [ ] `aparser task cancel <queryId>`
+  - [ ] `ayga-parser task status <queryId>`
+  - [ ] `ayga-parser task list` (active/completed)
+  - [ ] `ayga-parser task cancel <queryId>`
   - [ ] Queue depth metrics
 
 #### FR-005: Pipeline Mode
 - **Description:** Producer-consumer for batch processing
 - **Priority:** P2
 - **Acceptance Criteria:**
-  - [ ] `aparser pipeline produce --input-file`
-  - [ ] `aparser pipeline consume --output-queue`
+  - [ ] `ayga-parser pipeline produce --input-file`
+  - [ ] `ayga-parser pipeline consume --output-queue`
   - [ ] Parallel processing support
   - [ ] Progress bars and ETA
 
@@ -131,7 +131,7 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 ### 5.1 Performance
 - **NFR-001:** CLI startup <100ms
 - **NFR-002:** Redis operation <5ms (local)
-- **NFR-003:** HTTP operation <500ms (local A-Parser)
+- **NFR-003:** HTTP operation <500ms (local ayga-parser)
 - **NFR-004:** Memory usage <50MB resident
 
 ### 5.2 Reliability
@@ -166,13 +166,13 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 - **Testing:** pytest + pytest-asyncio
 
 ### 6.2 Dependencies
-- A-Parser instance (local or remote)
+- ayga-parser instance (local or remote)
 - Redis server (optional, for production)
 - Python 3.10+
 
 ### 6.3 Compatibility
 - **OS:** Linux (primary), macOS (secondary), Windows (best effort)
-- **A-Parser:** v2.x API
+- **ayga-parser:** v2.x API
 - **Redis:** v6.0+
 
 ---
@@ -205,7 +205,7 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 | Queue overflow | Medium | High | Monitor depth, alert >10K |
 | Result TTL expired | Low | Medium | Warn if not fetched within TTL/2 |
 | Parser crash mid-job | Low | High | Queue preserves requests, retry |
-| A-Parser API changes | Low | High | Version pinning, abstraction layer |
+| ayga-parser API changes | Low | High | Version pinning, abstraction layer |
 
 ---
 
@@ -222,14 +222,14 @@ A-Parser CLI (GTV) — hybrid Python CLI supporting both Redis (production) and 
 
 ## 10. Appendices
 
-### Appendix A: A-Parser API Methods
-See: `docs/a-parser-api-reference.md`
+### Appendix A: ayga-parser API Methods
+See: `docs/ayga-parser-api-reference.md`
 
 ### Appendix B: Redis Queue Patterns
 See: `docs/redis-queue-patterns.md`
 
 ### Appendix C: Council of Directors Session
-See: `docs/councils/aparser-cli-session-1.md`
+See: `docs/councils/ayga-cli-session-1.md`
 
 ---
 

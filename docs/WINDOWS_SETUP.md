@@ -1,4 +1,4 @@
-# A-Parser CLI — Windows Setup Guide
+# ayga-parser CLI — Windows Setup Guide
 
 **Version:** 2.3  
 **Last Updated:** 2026-03-09
@@ -13,21 +13,21 @@
 # 1. Install Python 3.10+ (if not installed)
 # Download from: https://python.org/downloads
 
-# 2. Install A-Parser CLI
-pip install aparser-cli
+# 2. Install ayga-parser CLI
+pip install ayga-cli
 
 # 3. Initialize configuration
-aparser init
+ayga-parser init
 
 # 4. Configure
-notepad $env:APPDATA\aparser-cli\.env
+notepad $env:APPDATA\ayga-cli\.env
 
-# Add your A-Parser credentials:
-# APARSER_URL=http://localhost:8080
-# APARSER_PASSWORD=123
+# Add your ayga-parser credentials:
+# ayga-parser_URL=http://localhost:8080
+# ayga-parser_PASSWORD=123
 
 # 5. Test
-aparser status
+ayga-parser status
 ```
 
 ---
@@ -36,10 +36,10 @@ aparser status
 
 ```powershell
 # Download latest release
-# https://github.com/your-org/aparser-cli/releases/download/v2.3/aparser-cli-windows.exe
+# https://github.com/your-org/ayga-cli/releases/download/v2.3/ayga-cli-windows.exe
 
 # Run directly
-.\aparser-cli-windows.exe status
+.\ayga-cli-windows.exe status
 ```
 
 ---
@@ -48,14 +48,14 @@ aparser status
 
 | Type | Location |
 |------|----------|
-| **Config** | `%APPDATA%\aparser-cli\.env` |
-| **Logs** | `%APPDATA%\aparser-cli\logs\` |
+| **Config** | `%APPDATA%\ayga-cli\.env` |
+| **Logs** | `%APPDATA%\ayga-cli\logs\` |
 | **Keyring** | Windows Credential Manager |
-| **Cache** | `%LOCALAPPDATA%\aparser-cli\cache\` |
+| **Cache** | `%LOCALAPPDATA%\ayga-cli\cache\` |
 
 To open config folder:
 ```powershell
-explorer $env:APPDATA\aparser-cli
+explorer $env:APPDATA\ayga-cli
 ```
 
 ---
@@ -64,20 +64,20 @@ explorer $env:APPDATA\aparser-cli
 
 ### Environment Variables
 
-Create `%APPDATA%\aparser-cli\.env`:
+Create `%APPDATA%\ayga-cli\.env`:
 
 ```env
-# A-Parser API
-APARSER_URL=http://localhost:8080
-APARSER_PASSWORD=123
+# ayga-parser API
+ayga-parser_URL=http://localhost:8080
+ayga-parser_PASSWORD=123
 
 # Redis (optional)
-APARSER_REDIS_HOST=localhost
-APARSER_REDIS_PORT=6379
-APARSER_REDIS_PASSWORD=your_redis_password
+ayga-parser_REDIS_HOST=localhost
+ayga-parser_REDIS_PORT=6379
+ayga-parser_REDIS_PASSWORD=your_redis_password
 
 # Logging
-APARSER_LOG_LEVEL=INFO
+ayga-parser_LOG_LEVEL=INFO
 ```
 
 ### Using Windows Credential Manager
@@ -85,11 +85,11 @@ APARSER_LOG_LEVEL=INFO
 Password is automatically stored in Windows Credential Manager:
 
 ```powershell
-# Store password (done automatically by `aparser init`)
-aparser config set-password
+# Store password (done automatically by `ayga-parser init`)
+ayga-parser config set-password
 
 # View stored credentials
-cmdkey /list | findstr aparser-cli
+cmdkey /list | findstr ayga-cli
 ```
 
 ---
@@ -107,11 +107,11 @@ Add MCP server:
 ```json
 {
   "mcpServers": {
-    "aparser": {
-      "command": "aparser-mcp",
+    "ayga-parser": {
+      "command": "ayga-parser-mcp",
       "args": [],
       "env": {
-        "APARSER_URL": "http://localhost:8080"
+        "ayga-parser_URL": "http://localhost:8080"
       }
     }
   }
@@ -130,8 +130,8 @@ Add:
 {
   "servers": [
     {
-      "name": "aparser",
-      "command": "aparser-mcp",
+      "name": "ayga-parser",
+      "command": "ayga-parser-mcp",
       "cwd": "."
     }
   ]
@@ -144,7 +144,7 @@ Add:
 # install: pip install mcp
 from mcp import ClientSession
 
-async with ClientSession('aparser-mcp') as session:
+async with ClientSession('ayga-parser-mcp') as session:
     # Run parser
     result = await session.call_tool('run_parser', {
         'parser': 'FreeAI::Perplexity',
@@ -168,8 +168,8 @@ async with ClientSession('aparser-mcp') as session:
 # https://git-scm.com/download/win
 
 # 3. Clone repository
-git clone https://github.com/your-org/aparser-cli
-cd aparser-cli
+git clone https://github.com/your-org/ayga-cli
+cd ayga-cli
 
 # 4. Create virtual environment
 python -m venv .venv
@@ -186,10 +186,10 @@ pip install -e ".[dev,mcp]"
 pip install pyinstaller
 
 # Build
-pyinstaller --onefile --name aparser src\aparser_cli\main.py
-pyinstaller --onefile --name aparser-mcp src\aparser_cli\mcp\server.py
+pyinstaller --onefile --name ayga-parser src\ayga_cli\main.py
+pyinstaller --onefile --name ayga-parser-mcp src\ayga_cli\mcp\server.py
 
-# Output: dist\aparser.exe, dist\aparser-mcp.exe
+# Output: dist\ayga-parser.exe, dist\ayga-parser-mcp.exe
 ```
 
 ### Run Tests
@@ -202,14 +202,14 @@ pip install -e ".[dev]"
 pytest
 
 # Run with coverage
-pytest --cov=aparser_cli --cov-report=html
+pytest --cov=ayga_cli --cov-report=html
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Issue: "aparser: command not found"
+### Issue: "ayga-parser: command not found"
 
 **Solution:**
 ```powershell
@@ -217,7 +217,7 @@ pytest --cov=aparser_cli --cov-report=html
 $env:Path += ";$env:USERPROFILE\AppData\Roaming\Python\Python311\Scripts"
 
 # Or reinstall
-pip install --force-reinstall aparser-cli
+pip install --force-reinstall ayga-cli
 ```
 
 ### Issue: Config file not found
@@ -225,13 +225,13 @@ pip install --force-reinstall aparser-cli
 **Solution:**
 ```powershell
 # Create config directory
-New-Item -ItemType Directory -Force -Path $env:APPDATA\aparser-cli
+New-Item -ItemType Directory -Force -Path $env:APPDATA\ayga-cli
 
 # Create .env file
 @"
-APARSER_URL=http://localhost:8080
-APARSER_PASSWORD=123
-"@ | Out-File -FilePath $env:APPDATA\aparser-cli\.env -Encoding utf8
+ayga-parser_URL=http://localhost:8080
+ayga-parser_PASSWORD=123
+"@ | Out-File -FilePath $env:APPDATA\ayga-cli\.env -Encoding utf8
 ```
 
 ### Issue: Keyring not working on Windows
@@ -242,7 +242,7 @@ APARSER_PASSWORD=123
 pip install keyring-winvault
 
 # Or use environment variable instead
-$env:APARSER_PASSWORD = "123"
+$env:ayga-parser_PASSWORD = "123"
 ```
 
 ### Issue: MCP server not found by agent
@@ -250,13 +250,13 @@ $env:APARSER_PASSWORD = "123"
 **Solution:**
 ```powershell
 # Check if MCP is installed
-where aparser-mcp
+where ayga-parser-mcp
 
 # If not found, install MCP extras
-pip install "aparser-cli[mcp]"
+pip install "ayga-cli[mcp]"
 
 # Verify MCP server
-aparser-mcp --help
+ayga-parser-mcp --help
 ```
 
 ---
@@ -265,7 +265,7 @@ aparser-mcp --help
 
 | Feature | Windows | Linux |
 |---------|---------|-------|
-| **Config Path** | `%APPDATA%\aparser-cli\` | `~/.config/aparser-cli/` |
+| **Config Path** | `%APPDATA%\ayga-cli\` | `~/.config/ayga-cli/` |
 | **Keyring** | Windows Credential Manager | SecretService/KWallet |
 | **Shell** | PowerShell / CMD | Bash / Zsh |
 | **Path Separator** | `\` | `/` |

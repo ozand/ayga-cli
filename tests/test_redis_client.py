@@ -1,28 +1,28 @@
-"""Tests for A-Parser Redis client."""
+"""Tests for ayga-parser Redis client."""
 
 import pytest
 import json
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from aparser_cli.client.redis import AParserRedisClient
+from ayga_cli.client.redis import ayga-parserRedisClient
 
 
-class TestAParserRedisClient:
-    """Test suite for AParserRedisClient."""
+class Testayga-parserRedisClient:
+    """Test suite for ayga-parserRedisClient."""
 
     def test_init_default_values(self):
         """Test client initialization with default values."""
-        client = AParserRedisClient(password="test_pass")
+        client = ayga-parserRedisClient(password="test_pass")
         assert client.redis_host == "127.0.0.1"
         assert client.redis_port == 6379
-        assert client.redis_queue == "aparser_redis_api"
+        assert client.redis_queue == "ayga-parser_redis_api"
         assert client.redis_password is None
         assert client.password == "test_pass"
         assert client._redis is None
 
     def test_init_custom_values(self):
         """Test client initialization with custom values."""
-        client = AParserRedisClient(
+        client = ayga-parserRedisClient(
             redis_host="redis.example.com",
             redis_port=6380,
             redis_queue="custom_queue",
@@ -42,7 +42,7 @@ class TestAParserRedisClient:
             mock_redis = AsyncMock()
             MockRedis.return_value = mock_redis
             
-            client = AParserRedisClient(password="test")
+            client = ayga-parserRedisClient(password="test")
             redis_instance = await client._get_redis()
             
             assert redis_instance is not None
@@ -61,7 +61,7 @@ class TestAParserRedisClient:
             mock_redis = AsyncMock()
             MockRedis.return_value = mock_redis
             
-            client = AParserRedisClient(password="test")
+            client = ayga-parserRedisClient(password="test")
             redis1 = await client._get_redis()
             redis2 = await client._get_redis()
             
@@ -75,7 +75,7 @@ class TestAParserRedisClient:
             mock_redis = AsyncMock()
             MockRedis.return_value = mock_redis
             
-            client = AParserRedisClient(password="test")
+            client = ayga-parserRedisClient(password="test")
             await client._get_redis()
             await client.close()
             
@@ -90,7 +90,7 @@ class TestAParserRedisClient:
             mock_redis.close = AsyncMock()  # redis-py uses close(), not aclose()
             MockRedis.return_value = mock_redis
             
-            async with AParserRedisClient(password="test") as client:
+            async with ayga-parserRedisClient(password="test") as client:
                 assert client is not None
                 # Trigger connection creation so close() will be called
                 await client._get_redis()
@@ -99,26 +99,26 @@ class TestAParserRedisClient:
             mock_redis.close.assert_called_once()
 
 
-class TestAParserRedisClientPush:
+class Testayga-parserRedisClientPush:
     """Test suite for Redis push operations."""
 
     @pytest.mark.asyncio
     async def test_push_success(self, mock_redis):
         """Test successful Redis LPUSH."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result_queue = await client.push(
                 parser="SE::Google",
                 query="test query",
                 preset="default",
             )
             
-            assert result_queue.startswith("aparser_results_")
+            assert result_queue.startswith("ayga-parser_results_")
             mock_redis.lpush.assert_called_once()
             
             # Verify the pushed data
             call_args = mock_redis.lpush.call_args
-            assert call_args[0][0] == "aparser_redis_api"  # queue name
+            assert call_args[0][0] == "ayga-parser_redis_api"  # queue name
             # Second arg is JSON string
             pushed_data = json.loads(call_args[0][1])
             assert pushed_data["password"] == "test_pass"
@@ -130,7 +130,7 @@ class TestAParserRedisClientPush:
     async def test_push_with_custom_result_queue(self, mock_redis):
         """Test push with custom result queue."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result_queue = await client.push(
                 parser="SE::Google",
                 query="test",
@@ -145,7 +145,7 @@ class TestAParserRedisClientPush:
     async def test_push_with_options(self, mock_redis):
         """Test push with options."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             options = [{"id": "pagecount", "value": 5}]
             
             await client.push(
@@ -161,7 +161,7 @@ class TestAParserRedisClientPush:
     async def test_push_empty_parser_raises(self, mock_redis):
         """Test push with empty parser raises error."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             
             with pytest.raises(ValueError) as exc_info:
                 await client.push(parser="", query="test")
@@ -171,14 +171,14 @@ class TestAParserRedisClientPush:
     async def test_push_empty_query_raises(self, mock_redis):
         """Test push with empty query raises error."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             
             with pytest.raises(ValueError) as exc_info:
                 await client.push(parser="SE::Google", query="")
             assert "Query cannot be empty" in str(exc_info.value)
 
 
-class TestAParserRedisClientPop:
+class Testayga-parserRedisClientPop:
     """Test suite for Redis pop operations."""
 
     @pytest.mark.asyncio
@@ -190,7 +190,7 @@ class TestAParserRedisClientPop:
         )
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result = await client.pop("result_queue", timeout=10)
             
             assert result["success"] == 1
@@ -203,7 +203,7 @@ class TestAParserRedisClientPop:
         mock_redis.blpop.return_value = None
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result = await client.pop("result_queue", timeout=5)
             
             assert result is None
@@ -212,7 +212,7 @@ class TestAParserRedisClientPop:
     async def test_pop_empty_queue_raises(self, mock_redis):
         """Test pop with empty queue name raises error."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             
             with pytest.raises(ValueError) as exc_info:
                 await client.pop("", timeout=10)
@@ -224,13 +224,13 @@ class TestAParserRedisClientPop:
         mock_redis.blpop.return_value = ("result_queue", "not valid json")
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             
             with pytest.raises(json.JSONDecodeError):
                 await client.pop("result_queue", timeout=10)
 
 
-class TestAParserRedisClientQueueDepth:
+class Testayga-parserRedisClientQueueDepth:
     """Test suite for queue depth operations."""
 
     @pytest.mark.asyncio
@@ -239,11 +239,11 @@ class TestAParserRedisClientQueueDepth:
         mock_redis.llen.return_value = 5
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
-            depth = await client.queue_depth("aparser_redis_api")
+            client = ayga-parserRedisClient(password="test_pass")
+            depth = await client.queue_depth("ayga-parser_redis_api")
             
             assert depth == 5
-            mock_redis.llen.assert_called_once_with("aparser_redis_api")
+            mock_redis.llen.assert_called_once_with("ayga-parser_redis_api")
 
     @pytest.mark.asyncio
     async def test_queue_depth_empty_queue(self, mock_redis):
@@ -251,7 +251,7 @@ class TestAParserRedisClientQueueDepth:
         mock_redis.llen.return_value = 0
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             depth = await client.queue_depth("empty_queue")
             
             assert depth == 0
@@ -260,14 +260,14 @@ class TestAParserRedisClientQueueDepth:
     async def test_queue_depth_empty_name_raises(self, mock_redis):
         """Test queue depth with empty name raises error."""
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             
             with pytest.raises(ValueError) as exc_info:
                 await client.queue_depth("")
             assert "Queue name cannot be empty" in str(exc_info.value)
 
 
-class TestAParserRedisClientHealth:
+class Testayga-parserRedisClientHealth:
     """Test suite for health check operations."""
 
     @pytest.mark.asyncio
@@ -276,7 +276,7 @@ class TestAParserRedisClientHealth:
         mock_redis.ping.return_value = True
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result = await client.health_check()
             
             assert result is True
@@ -289,7 +289,7 @@ class TestAParserRedisClientHealth:
         mock_redis.ping.side_effect = redis.RedisError("Connection refused")
         
         with patch("redis.asyncio.Redis", return_value=mock_redis):
-            client = AParserRedisClient(password="test_pass")
+            client = ayga-parserRedisClient(password="test_pass")
             result = await client.health_check()
             
             assert result is False

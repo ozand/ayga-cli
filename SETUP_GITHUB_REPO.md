@@ -1,10 +1,10 @@
-# Инструкция: Создание приватного репозитория для A-Parser CLI
+# Инструкция: Создание приватного репозитория для ayga-parser CLI
 
 ## 1. Создать приватный репозиторий на GitHub
 
 ```
 URL: https://github.com/new
-Name: aparser-cli
+Name: ayga-cli
 Description: Google API Pool & Parser Management Tool
 Visibility: Private (🔒)
 Initialize with: README (optional)
@@ -13,26 +13,26 @@ Initialize with: README (optional)
 ## 2. Запушить текущий код
 
 ```bash
-cd /home/opencode/.openclaw/workspace/projects/aparser-cli
+cd /home/opencode/.openclaw/workspace/projects/ayga-cli
 
 # Добавить remote (замени ozand на свой username)
-git remote add aparser https://github.com/ozand/aparser-cli.git
+git remote add ayga-parser https://github.com/ozand/ayga-cli.git
 
 # Запушить
-git push aparser main
+git push ayga-parser main
 ```
 
 **Или если нужно создать новую ветку:**
 ```bash
-git checkout -b aparser-main
-git push aparser aparser-main:main
+git checkout -b ayga-parser-main
+git push ayga-parser ayga-parser-main:main
 ```
 
 ## 3. Создать GitHub Personal Access Token
 
 ```
 URL: https://github.com/settings/tokens/new
-Name: aparser-cli-install
+Name: ayga-cli-install
 Expiration: No expiration (или 90 дней)
 Scopes: ✅ repo (Full control of private repositories)
 ```
@@ -53,7 +53,7 @@ $githubToken = "ghp_YOUR_GITHUB_TOKEN"  # Вставить реальный то
 ```powershell
 # 1. Скачать скрипт
 $githubToken = "ghp_REAL_TOKEN_HERE"
-$rawUrl = "https://raw.githubusercontent.com/ozand/aparser-cli/main/scripts/install.ps1"
+$rawUrl = "https://raw.githubusercontent.com/ozand/ayga-cli/main/scripts/install.ps1"
 $headers = @{ Authorization = "token $githubToken" }
 Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install.ps1"
 
@@ -61,7 +61,7 @@ Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install.ps1
 & "$env:TEMP\install.ps1"
 
 # 3. Проверить
-aparser --version
+ayga-parser --version
 ```
 
 ## 6. (Опционально) Добавить агентов в Collaborators
@@ -75,7 +75,7 @@ GitHub Repo → Settings → Collaborators → Add people
 
 ## Готово!
 
-Теперь агенты могут устанавливать A-Parser CLI через:
+Теперь агенты могут устанавливать ayga-parser CLI через:
 ```powershell
-pip install "git+https://ghp_TOKEN@github.com/ozand/aparser-cli.git"
+pip install "git+https://ghp_TOKEN@github.com/ozand/ayga-cli.git"
 ```

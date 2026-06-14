@@ -1,5 +1,5 @@
 # Development Backlog
-# A-Parser CLI v2.1 — Dynamic Discovery
+# ayga-parser CLI v2.1 — Dynamic Discovery
 
 **Sprint:** v2.1  
 **Duration:** 4 weeks  
@@ -17,7 +17,7 @@
 **Estimate:** 2 days
 
 **Description:**
-Implement `aparser parsers sync` command that fetches complete parser catalog from A-Parser API.
+Implement `ayga-parser parsers sync` command that fetches complete parser catalog from ayga-parser API.
 
 **Acceptance Criteria:**
 - [ ] Call `getParsersList` API method
@@ -27,7 +27,7 @@ Implement `aparser parsers sync` command that fetches complete parser catalog fr
   - available presets and their configs
   - parameter schemas (name, type, min/max, default)
   - keywords for fuzzy search
-- [ ] Save to `~/.config/aparser-cli/manifest.json`
+- [ ] Save to `~/.config/ayga-cli/manifest.json`
 - [ ] Implement 24h TTL mechanism
 - [ ] Add `--force` flag to bypass TTL
 - [ ] Progress indicator for long sync
@@ -44,8 +44,8 @@ Implement `aparser parsers sync` command that fetches complete parser catalog fr
 ```
 
 **Files:**
-- `src/aparser_cli/commands/parsers.py` — add `sync` subcommand
-- `src/aparser_cli/manifest.py` — new module for manifest operations
+- `src/ayga_cli/commands/parsers.py` — add `sync` subcommand
+- `src/ayga_cli/manifest.py` — new module for manifest operations
 
 ---
 
@@ -58,7 +58,7 @@ Implement `aparser parsers sync` command that fetches complete parser catalog fr
 Implement cache storage with TTL, auto-refresh, and corruption handling.
 
 **Acceptance Criteria:**
-- [ ] Cache file location: `~/.config/aparser-cli/manifest.json`
+- [ ] Cache file location: `~/.config/ayga-cli/manifest.json`
 - [ ] File permissions: 600 (owner read/write only)
 - [ ] TTL check on every CLI start
 - [ ] Auto-refresh in background if expired
@@ -134,7 +134,7 @@ Implement two-phase parsing: first identify parser, then validate arguments usin
 **Example:**
 ```bash
 # Input
-aparser run FreeAI::Perplexity --depth 5 "query"
+ayga-parser run FreeAI::Perplexity --depth 5 "query"
 
 # Phase 1: parser = "FreeAI::Perplexity"
 # Phase 2: schema = {depth: {type: int, min: 1, max: 10}}
@@ -153,7 +153,7 @@ aparser run FreeAI::Perplexity --depth 5 "query"
 Generate help text dynamically from parser schema.
 
 **Acceptance Criteria:**
-- [ ] `aparser run <parser> --help` shows parser-specific help
+- [ ] `ayga-parser run <parser> --help` shows parser-specific help
 - [ ] Description from manifest
 - [ ] All parameters with types and defaults
 - [ ] Required parameters marked
@@ -162,7 +162,7 @@ Generate help text dynamically from parser schema.
 
 **Output Example:**
 ```
-Usage: aparser run FreeAI::Perplexity [OPTIONS] QUERY
+Usage: ayga-parser run FreeAI::Perplexity [OPTIONS] QUERY
 
 AI-powered search via Perplexity. Returns structured answers with sources.
 
@@ -178,8 +178,8 @@ Options:
   --page-all         Automatically fetch all result pages
   
 Examples:
-  aparser run FreeAI::Perplexity "What is machine learning?"
-  aparser run FreeAI::Perplexity --depth 5 "Latest AI trends"
+  ayga-parser run FreeAI::Perplexity "What is machine learning?"
+  ayga-parser run FreeAI::Perplexity --depth 5 "Latest AI trends"
 
 Related parsers:
   - SE::Google (traditional search)
@@ -340,8 +340,8 @@ Preview mode for all commands.
     sources: null
   Preset: default
   
-  Transport: Redis (aparser_redis_api)
-  Expected result queue: aparser_result_abc123
+  Transport: Redis (ayga-parser_redis_api)
+  Expected result queue: ayga-parser_result_abc123
   Estimated time: 5-10 seconds
   
   API Payload:

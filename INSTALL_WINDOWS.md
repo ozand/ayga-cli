@@ -1,4 +1,4 @@
-# A-Parser CLI — Установка на Windows
+# ayga-parser CLI — Установка на Windows
 
 **Версия:** 2.3  
 **Статус:** Private (требует доступа к репозиторию)
@@ -12,28 +12,28 @@
 ```powershell
 # Скачать установочный скрипт из GitHub
 $githubToken = "ghp_YOUR_GITHUB_TOKEN"  # Замени на свой токен
-$rawUrl = "https://raw.githubusercontent.com/ozand/aparser-cli/main/scripts/install.ps1"
+$rawUrl = "https://raw.githubusercontent.com/ozand/ayga-cli/main/scripts/install.ps1"
 
 # Скачать с авторизацией (для приватного репо)
 $headers = @{ Authorization = "token $githubToken" }
-Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install-aparser.ps1"
+Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install-ayga-parser.ps1"
 ```
 
 ### Шаг 2: Запустить установку
 
 ```powershell
 # Запустить скрипт установки
-& "$env:TEMP\install-aparser.ps1" -AparserUrl "http://your-aparser-host:8080" -AparserPassword "123"
+& "$env:TEMP\install-ayga-parser.ps1" -ayga-parserUrl "http://your-ayga-parser-host:8080" -ayga-parserPassword "123"
 ```
 
 ### Шаг 3: Проверить установку
 
 ```powershell
 # Проверить версию
-aparser --version
+ayga-parser --version
 
 # Проверить статус
-aparser status
+ayga-parser status
 ```
 
 ---
@@ -56,13 +56,13 @@ aparser status
 
 # 2. Установить из приватного репо
 $githubToken = "ghp_YOUR_TOKEN"
-pip install "git+https://$githubToken@github.com/ozand/aparser-cli.git@main"
+pip install "git+https://$githubToken@github.com/ozand/ayga-cli.git@main"
 
 # 3. Инициализировать конфигурацию
-aparser init
+ayga-parser init
 
 # 4. Настроить
-notepad $env:APPDATA\aparser-cli\.env
+notepad $env:APPDATA\ayga-cli\.env
 ```
 
 ### Вариант B: Клонирование репозитория
@@ -70,8 +70,8 @@ notepad $env:APPDATA\aparser-cli\.env
 ```powershell
 # 1. Клонировать репозиторий
 $githubToken = "ghp_YOUR_TOKEN"
-git clone "https://$githubToken@github.com/ozand/aparser-cli.git"
-cd aparser-cli
+git clone "https://$githubToken@github.com/ozand/ayga-cli.git"
+cd ayga-cli
 
 # 2. Создать виртуальное окружение
 python -m venv .venv
@@ -81,21 +81,21 @@ python -m venv .venv
 pip install -e .
 
 # 4. Проверить
-aparser --version
+ayga-parser --version
 ```
 
 ### Вариант C: Standalone EXE (без Python)
 
 ```powershell
 # 1. Скачать .exe из Releases
-# https://github.com/ozand/aparser-cli/releases/latest
-# Скачать: aparser-cli-windows.exe
+# https://github.com/ozand/ayga-cli/releases/latest
+# Скачать: ayga-cli-windows.exe
 
 # 2. Запустить
-.\aparser-cli-windows.exe --version
+.\ayga-cli-windows.exe --version
 
 # 3. Настроить
-.\aparser-cli-windows.exe init
+.\ayga-cli-windows.exe init
 ```
 
 ---
@@ -104,27 +104,27 @@ aparser --version
 
 ### Конфигурационный файл
 
-После установки создать `%APPDATA%\aparser-cli\.env`:
+После установки создать `%APPDATA%\ayga-cli\.env`:
 
 ```env
-# A-Parser API
-APARSER_URL=http://your-aparser-host:8080
-APARSER_PASSWORD=123
+# ayga-parser API
+ayga-parser_URL=http://your-ayga-parser-host:8080
+ayga-parser_PASSWORD=123
 
 # Redis (опционально)
-# APARSER_REDIS_HOST=localhost
-# APARSER_REDIS_PORT=6379
+# ayga-parser_REDIS_HOST=localhost
+# ayga-parser_REDIS_PORT=6379
 
 # Логирование
-APARSER_LOG_LEVEL=INFO
+ayga-parser_LOG_LEVEL=INFO
 ```
 
 ### Быстрая настройка через CLI
 
 ```powershell
 # Установить URL и пароль
-aparser config set-url http://your-aparser-host:8080
-aparser config set-password
+ayga-parser config set-url http://your-ayga-parser-host:8080
+ayga-parser config set-password
 
 # Вас попросят ввести пароль (безопасно, через keyring)
 ```
@@ -139,11 +139,11 @@ aparser config set-password
 // ~/.claude/settings.json
 {
   "mcpServers": {
-    "aparser": {
-      "command": "aparser-mcp",
+    "ayga-parser": {
+      "command": "ayga-parser-mcp",
       "args": [],
       "env": {
-        "APARSER_URL": "http://your-aparser-host:8080"
+        "ayga-parser_URL": "http://your-ayga-parser-host:8080"
       }
     }
   }
@@ -157,8 +157,8 @@ aparser config set-password
 {
   "servers": [
     {
-      "name": "aparser",
-      "command": "aparser-mcp",
+      "name": "ayga-parser",
+      "command": "ayga-parser-mcp",
       "cwd": "."
     }
   ]
@@ -170,7 +170,7 @@ aparser config set-password
 ```python
 from mcp import ClientSession
 
-async with ClientSession('aparser-mcp') as session:
+async with ClientSession('ayga-parser-mcp') as session:
     result = await session.call_tool('run_parser', {
         'parser': 'FreeAI::Perplexity',
         'query': 'OpenClaw competitors'
@@ -182,7 +182,7 @@ async with ClientSession('aparser-mcp') as session:
 
 ## 🐛 Troubleshooting
 
-### Ошибка: "aparser: command not found"
+### Ошибка: "ayga-parser: command not found"
 
 **Решение:**
 ```powershell
@@ -190,7 +190,7 @@ async with ClientSession('aparser-mcp') as session:
 $env:Path += ";$env:USERPROFILE\AppData\Roaming\Python\Python311\Scripts"
 
 # Или переустановить
-pip install --force-reinstall "git+https://github.com/ozand/aparser-cli.git"
+pip install --force-reinstall "git+https://github.com/ozand/ayga-cli.git"
 ```
 
 ### Ошибка: "404 Not Found" при установке из GitHub
@@ -202,7 +202,7 @@ pip install --force-reinstall "git+https://github.com/ozand/aparser-cli.git"
 2. Scope: `repo` (full control of private repositories)
 3. Использовать токен в URL:
    ```powershell
-   pip install "git+https://ghp_YOUR_TOKEN@github.com/ozand/aparser-cli.git"
+   pip install "git+https://ghp_YOUR_TOKEN@github.com/ozand/ayga-cli.git"
    ```
 
 ### Ошибка: Keyring не работает на Windows
@@ -210,7 +210,7 @@ pip install --force-reinstall "git+https://github.com/ozand/aparser-cli.git"
 **Решение:**
 ```powershell
 # Использовать переменную окружения вместо keyring
-$env:APARSER_PASSWORD = "123"
+$env:ayga-parser_PASSWORD = "123"
 
 # Или установить Windows Credential Manager backend
 pip install keyring-winvault
@@ -220,8 +220,8 @@ pip install keyring-winvault
 
 ## 📞 Поддержка
 
-- **GitHub Issues:** https://github.com/ozand/aparser-cli/issues
-- **Документация:** https://github.com/ozand/aparser-cli/tree/main/docs
+- **GitHub Issues:** https://github.com/ozand/ayga-cli/issues
+- **Документация:** https://github.com/ozand/ayga-cli/tree/main/docs
 - **Контакт:** @ozand (Telegram)
 
 ---

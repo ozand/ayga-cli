@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-# A-Parser CLI v2.1 — Dynamic Discovery Architecture
+# ayga-parser CLI v2.1 — Dynamic Discovery Architecture
 
 **Version:** 2.1  
 **Date:** 2026-03-07  
@@ -12,9 +12,9 @@
 ## 1. Executive Summary
 
 ### 1.1 Problem Statement
-Current A-Parser CLI v1.0 has critical architectural flaws:
+Current ayga-parser CLI v1.0 has critical architectural flaws:
 - **Hardcoded parsers:** Only 3 parsers known, missing 100+ including `FreeAI::Perplexity`
-- **Static commands:** CLI doesn't adapt to A-Parser instance capabilities
+- **Static commands:** CLI doesn't adapt to ayga-parser instance capabilities
 - **No discovery:** Agents must know parser names in advance
 - **No caching:** Every call fetches fresh data from API
 - **Single-phase parsing:** Can't validate parser-specific arguments
@@ -23,7 +23,7 @@ Current A-Parser CLI v1.0 has critical architectural flaws:
 **Dynamic Discovery Architecture** — CLI that:
 1. Discovers all available parsers at runtime via `getParsersList` + `getParserInfo`
 2. Caches manifest locally (24h TTL)
-3. Builds commands dynamically based on actual A-Parser capabilities
+3. Builds commands dynamically based on actual ayga-parser capabilities
 4. Validates arguments using parser schemas (two-phase parsing)
 5. Supports fuzzy search for parser discovery
 
@@ -52,11 +52,11 @@ Current A-Parser CLI v1.0 has critical architectural flaws:
 
 ### 2.2 Dynamic Command Building
 **As a** CLI user  
-**I want** commands to adapt to my A-Parser instance  
+**I want** commands to adapt to my ayga-parser instance  
 **So that** I see only available parsers and their actual parameters
 
 **Acceptance Criteria:**
-- [ ] `aparser run <parser>` shows parser-specific flags dynamically
+- [ ] `ayga-parser run <parser>` shows parser-specific flags dynamically
 - [ ] Unknown parsers produce helpful "Did you mean...?" suggestions
 - [ ] Parser parameters validated before API call
 
@@ -79,7 +79,7 @@ Current A-Parser CLI v1.0 has critical architectural flaws:
 - [ ] First run: <5s to build manifest cache
 - [ ] Subsequent runs: <100ms to load from cache
 - [ ] Cache auto-refreshes every 24h
-- [ ] Manual refresh: `aparser parsers sync`
+- [ ] Manual refresh: `ayga-parser parsers sync`
 
 ---
 
@@ -89,7 +89,7 @@ Current A-Parser CLI v1.0 has critical architectural flaws:
 
 #### FR-001: Manifest Sync
 ```
-Command: aparser parsers sync [--force]
+Command: ayga-parser parsers sync [--force]
 Behavior:
   1. Call getParsersList API
   2. For each parser: call getParserInfo
@@ -100,7 +100,7 @@ Behavior:
      - available presets
      - parameter schemas
      - keywords (for fuzzy search)
-  4. Save to ~/.config/aparser-cli/manifest.json
+  4. Save to ~/.config/ayga-cli/manifest.json
   5. Set TTL: 24 hours
 ```
 
@@ -130,22 +130,22 @@ Search algorithm: fuzzy matching with Levenshtein distance
 #### FR-004: Two-Phase Command Parser
 ```
 Phase 1: Identify parser
-  Input: aparser run FreeAI::Perplexity --depth 5 "query"
+  Input: ayga-parser run FreeAI::Perplexity --depth 5 "query"
   Action: Load parser schema from manifest
   Output: Known parser with validated parameters
 
 Phase 2: Validate and execute
   Validate: --depth is int, within allowed range
   Transform: Build API payload
-  Execute: Send to A-Parser via Redis/HTTP
+  Execute: Send to ayga-parser via Redis/HTTP
 ```
 
 #### FR-005: Dynamic Help Generation
 ```
-aparser run FreeAI::Perplexity --help
+ayga-parser run FreeAI::Perplexity --help
 
 Output (generated from manifest):
-  Usage: aparser run FreeAI::Perplexity [OPTIONS] QUERY
+  Usage: ayga-parser run FreeAI::Perplexity [OPTIONS] QUERY
   
   AI-powered search via Perplexity
   
@@ -216,7 +216,7 @@ async def validate_parser_call(
 #### FR-009: --dry-run Flag
 ```
 For any command:
-  aparser run SE::Google "test" --dry-run
+  ayga-parser run SE::Google "test" --dry-run
   
 Output:
   [DRY RUN] Would execute:
@@ -224,13 +224,13 @@ Output:
     Query: "test"
     Preset: default
     Options: {pagecount: 1}
-    Redis queue: aparser_redis_api
-    Expected result queue: aparser_result_abc123
+    Redis queue: ayga-parser_redis_api
+    Expected result queue: ayga-parser_result_abc123
 ```
 
 #### FR-010: --page-all Flag
 ```
-aparser run SE::Google "test" --page-all --max-pages 10
+ayga-parser run SE::Google "test" --page-all --max-pages 10
 
 Behavior:
   1. Execute page 1
@@ -250,7 +250,7 @@ Behavior:
 - **NFR-004:** Command completion <200ms
 
 ### 4.2 Reliability
-- **NFR-005:** Graceful degradation if A-Parser API unavailable (use stale cache)
+- **NFR-005:** Graceful degradation if ayga-parser API unavailable (use stale cache)
 - **NFR-006:** Automatic retry on sync failure (3 attempts)
 - **NFR-007:** Cache corruption detection and auto-rebuild
 
@@ -271,7 +271,7 @@ Behavior:
 └──────────────────────┬──────────────────────────────────────┘
                        │
            ┌───────────▼───────────┐
-           │   A-Parser CLI v2.1   │
+           │   ayga-parser CLI v2.1   │
            │  ┌─────────────────┐  │
            │  │  Command Router │  │
            │  │  (Two-Phase)    │  │
@@ -295,7 +295,7 @@ Behavior:
         ┌───────────────┼───────────────┐
         │               │               │
 ┌───────▼──────┐ ┌──────▼───────┐ ┌────▼──────────┐
-│   Manifest   │ │   A-Parser   │ │   Redis       │
+│   Manifest   │ │   ayga-parser   │ │   Redis       │
 │   Cache File │ │   HTTP API   │ │   Queue       │
 │   (JSON)     │ │   (getInfo)  │ │   (jobs)      │
 └──────────────┘ └──────────────┘ └───────────────┘
@@ -304,7 +304,7 @@ Behavior:
 ### 5.2 Data Flow
 
 ```
-1. User: aparser run FreeAI::Perplexity --depth 5 "query"
+1. User: ayga-parser run FreeAI::Perplexity --depth 5 "query"
    │
 2. CLI: Load manifest from cache
    │
@@ -328,7 +328,7 @@ Behavior:
 ## 6. Implementation Phases
 
 ### Phase 1: Foundation (Week 1)
-- [ ] Manifest sync command (`aparser parsers sync`)
+- [ ] Manifest sync command (`ayga-parser parsers sync`)
 - [ ] Cache storage and TTL management
 - [ ] Basic fuzzy search index
 
@@ -353,7 +353,7 @@ Behavior:
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| A-Parser API breaking changes | Low | High | Version pinning, abstraction layer |
+| ayga-parser API breaking changes | Low | High | Version pinning, abstraction layer |
 | Large manifest size (>10MB) | Medium | Medium | Compression, lazy loading |
 | Fuzzy search false positives | Medium | Low | Confidence threshold, explicit confirmation |
 | Cache stale data | Medium | Medium | TTL + manual sync + stale warning |

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from aparser_cli.presets import Preset, PresetManager, get_preset_manager, reset_preset_manager
+from ayga_cli.presets import Preset, PresetManager, get_preset_manager, reset_preset_manager
 
 
 class TestPreset:

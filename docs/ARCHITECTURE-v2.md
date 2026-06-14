@@ -1,24 +1,24 @@
 # System Architecture v2.0
-# A-Parser CLI & AYGA MCP Integration
+# ayga-parser CLI & AYGA MCP Integration
 
-**Date:** 2026-03-07 (Revised after A-Parser API analysis)  
+**Date:** 2026-03-07 (Revised after ayga-parser API analysis)  
 **Status:** Design Complete
 
 ---
 
 ## 1. Executive Summary
 
-After analyzing the A-Parser API documentation and reference implementations (Google Workspace CLI, CLIHub, MCP CLI), the architecture has been **significantly revised** to align with A-Parser's actual capabilities and best practices for agentic tool use.
+After analyzing the ayga-parser API documentation and reference implementations (Google Workspace CLI, CLIHub, MCP CLI), the architecture has been **significantly revised** to align with ayga-parser's actual capabilities and best practices for agentic tool use.
 
 **Key Changes from v1.0:**
 - **Lazy Tool Loading:** Only 2 MCP tools exposed (`search_parsers`, `run_parser`) instead of 100+
 - **Redis-First Design:** HTTP API is secondary; Redis queue is primary for production
-- **Unified Queue:** Single `aparser_redis_api` queue with configurable result queues
+- **Unified Queue:** Single `ayga-parser_redis_api` queue with configurable result queues
 - **Passthrough JSON:** `--from-json` flag for complex preset overrides
 
 ---
 
-## 2. A-Parser API Capabilities (Analyzed)
+## 2. ayga-parser API Capabilities (Analyzed)
 
 ### 2.1 HTTP API Methods
 
@@ -35,8 +35,8 @@ After analyzing the A-Parser API documentation and reference implementations (Go
 
 **Queue Structure:**
 ```
-LPUSH aparser_redis_api {request_json}
-→ A-Parser processes
+LPUSH ayga-parser_redis_api {request_json}
+→ ayga-parser processes
 → LPUSH {result_queue} {result_json}
 ← BLPOP {result_queue} {timeout}
 ```
@@ -44,7 +44,7 @@ LPUSH aparser_redis_api {request_json}
 **Key Features:**
 - **Async by default:** LPUSH returns immediately
 - **Blocking retrieval:** BLPOP with timeout
-- **Multiple parsers:** Can connect N A-Parser instances to same queue
+- **Multiple parsers:** Can connect N ayga-parser instances to same queue
 - **Auto-expire:** TTL on results (default 3600s)
 - **Separate result queues:** Configurable per-request
 
@@ -60,7 +60,7 @@ LPUSH aparser_redis_api {request_json}
 }
 ```
 
-**Presets:** Named configurations stored in A-Parser
+**Presets:** Named configurations stored in ayga-parser
 **ConfigPresets:** Thread pool configurations (concurrency settings)
 
 ---
@@ -82,7 +82,7 @@ LPUSH aparser_redis_api {request_json}
            └──────────┬───────────────┘
                       │
            ┌──────────▼───────────────┐
-           │    A-Parser CLI Core     │
+           │    ayga-parser CLI Core     │
            │  ┌─────────────────────┐ │
            │  │  Transport Router   │ │
            │  │  • Redis (primary)  │ │
@@ -98,10 +98,10 @@ LPUSH aparser_redis_api {request_json}
         ┌─────────────┼─────────────┐
         │             │             │
 ┌───────▼──────┐ ┌────▼─────┐ ┌────▼──────────┐
-│   Redis      │ │   HTTP   │ │   A-Parser    │
+│   Redis      │ │   HTTP   │ │   ayga-parser    │
 │   Queue      │ │   API    │ │   Instance(s) │
 │              │ │          │ │               │
-│ aparser_     │ │:9091/API │ │  • 100 threads│
+│ ayga-parser_     │ │:9091/API │ │  • 100 threads│
 │ redis_api    │ │          │ │  • Multiple   │
 │              │ │          │ │    presets    │
 └──────────────┘ └──────────┘ └───────────────┘
@@ -112,7 +112,7 @@ LPUSH aparser_redis_api {request_json}
 **Primary: Redis**
 ```python
 # Producer (CLI/MCP)
-redis.lpush("aparser_redis_api", json.dumps({
+redis.lpush("ayga-parser_redis_api", json.dumps({
     "password": "...",
     "action": "oneRequest",
     "data": {
@@ -148,7 +148,7 @@ async def search_parsers(
     category: str = ""  # Optional category filter
 ) -> list[dict]:
     """
-    Search available A-Parser parsers and presets.
+    Search available ayga-parser parsers and presets.
     Returns lightweight metadata (name, description, category).
     Does NOT return full JSON schemas (saves tokens).
     """
@@ -165,7 +165,7 @@ async def run_parser(
     timeout: int = 300
 ) -> dict:
     """
-    Execute parsing job via A-Parser.
+    Execute parsing job via ayga-parser.
     
     Mode 1 (async_mode=True): Returns immediately with job_id
     Mode 2 (async_mode=False): Blocks until result, returns data
@@ -188,32 +188,32 @@ async def run_parser(
 
 ```bash
 # Configuration
-aparser config init                    # Interactive setup
-aparser config set redis.host 127.0.0.1
-aparser config auth                    # Store password in OS keyring
+ayga-parser config init                    # Interactive setup
+ayga-parser config set redis.host 127.0.0.1
+ayga-parser config auth                    # Store password in OS keyring
 
 # Discovery
-aparser parsers list                   # All parsers
-aparser parsers list --category SE     # Filter by category
-aparser parsers info SE::Google        # Detailed parser info
+ayga-parser parsers list                   # All parsers
+ayga-parser parsers list --category SE     # Filter by category
+ayga-parser parsers info SE::Google        # Detailed parser info
 
 # Redis Operations (Primary)
-aparser redis push SE::Google "query" --preset default
-aparser redis push SE::Google --file queries.txt --async
-aparser redis wait ayga_results_123 --timeout 300
-aparser redis consume ayga_results --continuous
+ayga-parser redis push SE::Google "query" --preset default
+ayga-parser redis push SE::Google --file queries.txt --async
+ayga-parser redis wait ayga_results_123 --timeout 300
+ayga-parser redis consume ayga_results --continuous
 
 # HTTP Operations (Fallback)
-aparser http request SE::Google "query" --preset default
+ayga-parser http request SE::Google "query" --preset default
 
 # Task Management
-aparser task status {job_id}
-aparser task list --active
-aparser task cancel {job_id}
+ayga-parser task status {job_id}
+ayga-parser task list --active
+ayga-parser task cancel {job_id}
 
 # Pipeline Mode
-aparser pipeline produce --input domains.txt --parser Net::Whois
-aparser pipeline consume --output results.jsonl
+ayga-parser pipeline produce --input domains.txt --parser Net::Whois
+ayga-parser pipeline consume --output results.jsonl
 ```
 
 ### 4.2 Advanced Features
@@ -221,7 +221,7 @@ aparser pipeline consume --output results.jsonl
 **Passthrough JSON:**
 ```bash
 # Instead of complex CLI flags, pass raw JSON
-aparser redis push SE::Google "query" --from-json '{
+ayga-parser redis push SE::Google "query" --from-json '{
   "options": [
     {"id": "pagecount", "value": 5, "type": "override"}
   ]
@@ -231,15 +231,15 @@ aparser redis push SE::Google "query" --from-json '{
 **Pagination Handling:**
 ```bash
 # CLI handles pagination automatically
-aparser http request SE::Google "query" --page-all
+ayga-parser http request SE::Google "query" --page-all
 ```
 
 **Multiple Output Formats:**
 ```bash
-aparser redis wait {queue} --format json    # Structured JSON
-aparser redis wait {queue} --format jsonl   # NDJSON for streaming
-aparser redis wait {queue} --format table   # Human-readable table
-aparser redis wait {queue} --format csv     # CSV export
+ayga-parser redis wait {queue} --format json    # Structured JSON
+ayga-parser redis wait {queue} --format jsonl   # NDJSON for streaming
+ayga-parser redis wait {queue} --format table   # Human-readable table
+ayga-parser redis wait {queue} --format csv     # CSV export
 ```
 
 ---
@@ -248,22 +248,22 @@ aparser redis wait {queue} --format csv     # CSV export
 
 ### 5.1 Config Sources (Priority Order)
 
-1. **Environment Variables:** `APARSER_REDIS_HOST`, `APARSER_PASSWORD`
-2. **Config File:** `~/.config/aparser-cli/config.yaml`
+1. **Environment Variables:** `ayga-parser_REDIS_HOST`, `ayga-parser_PASSWORD`
+2. **Config File:** `~/.config/ayga-cli/config.yaml`
 3. **OS Keyring:** Secure password storage
 4. **CLI Flags:** `--redis-host`, `--password`
 
 ### 5.2 Config Schema (Pydantic)
 
 ```python
-class AParserConfig(BaseSettings):
+class ayga-parserConfig(BaseSettings):
     # HTTP API
     http_url: str = "http://127.0.0.1:9091/API"
     
     # Redis
     redis_host: str = "127.0.0.1"
     redis_port: int = 6379
-    redis_queue: str = "aparser_redis_api"
+    redis_queue: str = "ayga-parser_redis_api"
     redis_password: Optional[str] = None
     
     # Auth
@@ -275,7 +275,7 @@ class AParserConfig(BaseSettings):
     default_config_preset: str = "default"
     
     class Config:
-        env_prefix = "APARSER_"
+        env_prefix = "ayga-parser_"
         secrets_dir = "/run/secrets"  # Docker support
 ```
 
@@ -294,7 +294,7 @@ class AParserConfig(BaseSettings):
                        ┌────────────────────────┘
                        │
                 ┌──────▼──────┐
-                │  A-Parser   │
+                │  ayga-parser   │
                 │  Password   │
                 │  (in-mem)   │
                 └──────┬──────┘
@@ -351,10 +351,10 @@ async def execute_request(request: dict) -> dict:
 
 ```python
 # Prometheus-style metrics
-aparser_requests_total{transport="redis", status="success"}
-aparser_requests_total{transport="http", status="error"}
-aparser_queue_depth{queue="aparser_redis_api"}
-aparser_request_duration_seconds{quantile="0.95"}
+ayga-parser_requests_total{transport="redis", status="success"}
+ayga-parser_requests_total{transport="http", status="error"}
+ayga-parser_queue_depth{queue="ayga-parser_redis_api"}
+ayga-parser_request_duration_seconds{quantile="0.95"}
 ```
 
 ### 8.2 Logging
@@ -367,7 +367,7 @@ aparser_request_duration_seconds{quantile="0.95"}
     "component": "redis_client",
     "action": "lpush",
     "parser": "SE::Google",
-    "queue": "aparser_redis_api",
+    "queue": "ayga-parser_redis_api",
     "duration_ms": 5.2
 }
 ```
@@ -380,12 +380,12 @@ aparser_request_duration_seconds{quantile="0.95"}
 
 ```python
 # MCP Server initialization
-mcp = MCP("aparser-mcp")
+mcp = MCP("ayga-parser-mcp")
 
 @mcp.tool()
 async def search_parsers(query: str = "") -> list[dict]:
     """Lightweight parser discovery"""
-    cli = AParserCLI()
+    cli = ayga-parserCLI()
     return await cli.parsers.search(query)
 
 @mcp.tool()
@@ -396,7 +396,7 @@ async def run_parser(
     async_mode: bool = True
 ) -> dict:
     """Execute parsing job"""
-    cli = AParserCLI()
+    cli = ayga-parserCLI()
     
     if async_mode:
         job_id = await cli.redis.push(parser, query, preset)
@@ -411,14 +411,14 @@ async def run_parser(
 ```bash
 #!/bin/bash
 # Daily domain parsing
-aparser redis push Net::Whois \
+ayga-parser redis push Net::Whois \
     --file /data/domains.txt \
     --preset "default" \
     --output-queue daily_whois_results \
     --async
 
 # Process results
-aparser redis consume daily_whois_results \
+ayga-parser redis consume daily_whois_results \
     --format jsonl \
     --output /data/results.jsonl
 ```
@@ -430,32 +430,32 @@ aparser redis consume daily_whois_results \
 ### 10.1 Local Development
 
 ```bash
-pip install aparser-cli
-aparser config init
-aparser ping
+pip install ayga-cli
+ayga-parser config init
+ayga-parser ping
 ```
 
 ### 10.2 Docker
 
 ```dockerfile
 FROM python:3.12-slim
-RUN pip install aparser-cli
-ENTRYPOINT ["aparser"]
+RUN pip install ayga-cli
+ENTRYPOINT ["ayga-parser"]
 ```
 
 ### 10.3 Systemd Service
 
 ```ini
 [Unit]
-Description=A-Parser CLI MCP Server
+Description=ayga-parser CLI MCP Server
 After=network.target
 
 [Service]
 Type=simple
-User=aparser
-ExecStart=/usr/local/bin/aparser mcp serve
+User=ayga-parser
+ExecStart=/usr/local/bin/ayga-parser mcp serve
 Restart=always
-Environment=APARSER_REDIS_HOST=127.0.0.1
+Environment=ayga-parser_REDIS_HOST=127.0.0.1
 
 [Install]
 WantedBy=multi-user.target
@@ -465,7 +465,7 @@ WantedBy=multi-user.target
 
 ## 11. Comparison with Reference Implementations
 
-| Feature | Google CLI | CLIHub | MCP CLI | A-Parser CLI (This) |
+| Feature | Google CLI | CLIHub | MCP CLI | ayga-parser CLI (This) |
 |---------|------------|--------|---------|---------------------|
 | Dynamic commands | ✅ Discovery API | ✅ MCP codegen | ❌ Static | ✅ Parser introspection |
 | Redis transport | ❌ | ❌ | ❌ | ✅ Primary |

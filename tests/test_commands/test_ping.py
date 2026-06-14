@@ -4,7 +4,7 @@ import pytest
 from typer.testing import CliRunner
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from aparser_cli.main import app
+from ayga_cli.main import app
 
 runner = CliRunner()
 
@@ -20,24 +20,24 @@ class TestPingCommand:
 
     def test_ping_default(self):
         """Test ping command with default options."""
-        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+        with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "A-Parser API responded with pong",
+            "message": "ayga-parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": True,
             "basic_auth_username": "",
         })):
             result = runner.invoke(app, ["ping"])
         assert result.exit_code == 0
-        assert "A-Parser API responded with pong" in result.output
+        assert "ayga-parser API responded with pong" in result.output
 
     def test_ping_with_host(self):
         """Test ping command with custom host."""
-        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+        with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "A-Parser API responded with pong",
+            "message": "ayga-parser API responded with pong",
             "http_url": "http://example.com:9091/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,
@@ -48,10 +48,10 @@ class TestPingCommand:
 
     def test_ping_with_port(self):
         """Test ping command with custom port."""
-        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+        with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "A-Parser API responded with pong",
+            "message": "ayga-parser API responded with pong",
             "http_url": "http://127.0.0.1:8080/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,
@@ -61,10 +61,10 @@ class TestPingCommand:
 
     def test_ping_json_output(self):
         """Test ping command with JSON output."""
-        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+        with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "A-Parser API responded with pong",
+            "message": "ayga-parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": True,
             "basic_auth_username": "",
@@ -77,10 +77,10 @@ class TestPingCommand:
 
     def test_ping_with_timeout(self):
         """Test ping command with custom timeout."""
-        with patch("aparser_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
+        with patch("ayga_cli.commands.ping._ping_backend", new=AsyncMock(return_value={
             "status": "ok",
             "reachable": True,
-            "message": "A-Parser API responded with pong",
+            "message": "ayga-parser API responded with pong",
             "http_url": "http://localhost:9091/API",
             "basic_auth_enabled": False,
             "basic_auth_username": None,

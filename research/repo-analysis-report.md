@@ -1,7 +1,7 @@
 # Repository Analysis Report: CLI vs MCP Architecture
 
 ## 1. Executive Summary
-This report analyzes core architectural patterns for the A-Parser CLI based on Google Workspace CLI, CLIHub, MCP CLI, Anthropic practices, and recent architectural articles. 
+This report analyzes core architectural patterns for the ayga-parser CLI based on Google Workspace CLI, CLIHub, MCP CLI, Anthropic practices, and recent architectural articles. 
 
 **Key conclusion:** Traditional MCP implementations are powerful but context-heavy ("Instruction Manual Tax"). The most successful modern agentic tools focus on dynamic discovery, structured JSON-first output, and "Lazy Loading" of tool definitions to save tokens and improve agent accuracy.
 
@@ -36,16 +36,16 @@ This report analyzes core architectural patterns for the A-Parser CLI based on G
 3. **OS Keyring:** Avoid plaintext config files for API keys.
 
 ## 4. Anti-Patterns to Avoid
-* ❌ **Pre-loading all schemas:** Dumping every A-Parser preset/tool schema into the MCP context at startup (causes Context Overflow).
+* ❌ **Pre-loading all schemas:** Dumping every ayga-parser preset/tool schema into the MCP context at startup (causes Context Overflow).
 * ❌ **Natural Language Pagination:** Forcing the LLM agent to explicitly call `page=1, page=2`. The CLI should handle `--page-all` under the hood.
-* ❌ **Plaintext secrets:** Storing A-Parser API passwords in `.env` or `config.json` without option for secure keyring.
+* ❌ **Plaintext secrets:** Storing ayga-parser API passwords in `.env` or `config.json` without option for secure keyring.
 
-## 5. Recommendations for A-Parser CLI
+## 5. Recommendations for ayga-parser CLI
 1. **Hybrid Architecture:** Implement an **MCP-compatible interface** within the CLI to allow it to be used as a backend for Claude/Copilot, while maintaining standalone CLI efficiency.
-2. **Dynamic Discovery:** Build the A-Parser CLI commands dynamically based on the available parsers/presets on the specific A-Parser instance.
+2. **Dynamic Discovery:** Build the ayga-parser CLI commands dynamically based on the available parsers/presets on the specific ayga-parser instance.
 3. **Lazy Loading:** Keep the agent's context window clean. Only load specific parser schemas when requested via a `search` or `help` command.
 
 ## 6. Actionable Insights for Implementation
-* Update `ARCHITECTURE.md` to include a `--from-json` flag for all A-Parser requests.
-* Rethink the AYGA MCP integration: instead of exposing 100+ A-Parser modules as 100+ MCP tools, expose **one tool** (`aparser-cli`) that allows the agent to run `--help` or `--query` dynamically.
+* Update `ARCHITECTURE.md` to include a `--from-json` flag for all ayga-parser requests.
+* Rethink the AYGA MCP integration: instead of exposing 100+ ayga-parser modules as 100+ MCP tools, expose **one tool** (`ayga-cli`) that allows the agent to run `--help` or `--query` dynamically.
 * Implement NDJSON output support for streaming large parsing results back to the agent.
