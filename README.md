@@ -1,6 +1,6 @@
-# A-Parser CLI (GTV)
+# ayga-parser CLI (GTV)
 
-**Gateway to External Data** — Modern CLI and MCP server for A-Parser integration.
+**Gateway to External Data** — Modern CLI and MCP server for ayga-parser integration.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -17,7 +17,7 @@
 
 ```bash
 # Clone and install
-cd projects/aparser-cli
+cd projects/ayga-cli
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[mcp]"
@@ -30,20 +30,20 @@ pip install -e ".[mcp]"
 
 ```bash
 # Interactive setup
-aparser config init
+ayga-parser config init
 
 # Or set via environment
-export APARSER_HTTP_URL="http://127.0.0.1:9091/API"
-export APARSER_REDIS_HOST="127.0.0.1"
-export APARSER_REDIS_PORT="6379"
-export APARSER_PASSWORD="your_password"
+export ayga-parser_HTTP_URL="http://127.0.0.1:9091/API"
+export ayga-parser_REDIS_HOST="127.0.0.1"
+export ayga-parser_REDIS_PORT="6379"
+export ayga-parser_PASSWORD="your_password"
 ```
 
 - Config files, presets, and manifest cache now share one canonical config directory:
-  - Windows: `%APPDATA%\aparser-cli`
-  - macOS: `~/Library/Application Support/aparser-cli`
-  - Linux: `~/.config/aparser-cli`
-- HTTP requests can use both the API password payload and HTTP Basic Auth. Set `APARSER_HTTP_BASIC_USERNAME` and optionally `APARSER_HTTP_BASIC_PASSWORD` if your backend requires explicit Basic Auth credentials.
+  - Windows: `%APPDATA%\ayga-cli`
+  - macOS: `~/Library/Application Support/ayga-cli`
+  - Linux: `~/.config/ayga-cli`
+- HTTP requests can use both the API password payload and HTTP Basic Auth. Set `ayga-parser_HTTP_BASIC_USERNAME` and optionally `ayga-parser_HTTP_BASIC_PASSWORD` if your backend requires explicit Basic Auth credentials.
 
 ## 🖥️ CLI Usage
 
@@ -51,40 +51,40 @@ export APARSER_PASSWORD="your_password"
 
 ```bash
 # Test connection
-aparser ping
+ayga-parser ping
 
 # List available parsers
-aparser parsers list
-aparser parsers list --category SE
+ayga-parser parsers list
+ayga-parser parsers list --category SE
 
 # Get parser details
-aparser parsers info SE::Google
+ayga-parser parsers info SE::Google
 
 # Submit job to Redis queue
-aparser redis push SE::Google "test query" --preset default
+ayga-parser redis push SE::Google "test query" --preset default
 
 # Wait for result
-aparser redis wait aparser_result_abc123 --timeout 300
+ayga-parser redis wait ayga-parser_result_abc123 --timeout 300
 ```
 
 ### Advanced Usage
 
 ```bash
 # Batch processing from file
-aparser redis push SE::Google --file queries.txt --async
+ayga-parser redis push SE::Google --file queries.txt --async
 
 # Custom result queue
-aparser redis push Net::Whois "example.com" --result-queue my_results
+ayga-parser redis push Net::Whois "example.com" --result-queue my_results
 
 # Passthrough JSON for complex options
-aparser redis push SE::Google "query" --from-json '{
+ayga-parser redis push SE::Google "query" --from-json '{
   "options": [
     {"id": "pagecount", "value": 5, "type": "override"}
   ]
 }'
 
 # HTTP fallback (synchronous)
-aparser http request SE::Google "query" --preset default
+ayga-parser http request SE::Google "query" --preset default
 ```
 
 ## 🤖 MCP Server
@@ -93,10 +93,10 @@ Run the MCP server for AI agent integration:
 
 ```bash
 # Start MCP server
-aparser-mcp
+ayga-parser-mcp
 
 # Or via Python
-python -m aparser_cli.mcp.server
+python -m ayga_cli.mcp.server
 ```
 
 ### MCP Tools
@@ -115,7 +115,7 @@ result = await mcp.run_parser(
     query="test",
     async_mode=True  # Returns immediately with job_id
 )
-# Returns: {"status": "queued", "job_id": "aparser_result_abc123"}
+# Returns: {"status": "queued", "job_id": "ayga-parser_result_abc123"}
 
 # Later, check result
 result = await mcp.run_parser(
@@ -136,7 +136,7 @@ result = await mcp.run_parser(
        └───────────┬───────┴───────┬───────────┘
                    │               │
            ┌───────▼───────┐       │
-           │  A-Parser CLI │       │
+           │  ayga-parser CLI │       │
            │  ├─ HTTP Client     │
            │  ├─ Redis Client    │
            │  └─ MCP Server      │
@@ -152,7 +152,7 @@ result = await mcp.run_parser(
        └──────────┬───────────┘       │
                   │                   │
            ┌──────▼──────┐            │
-           │  A-Parser   │            │
+           │  ayga-parser   │            │
            │   Engine    │            │
            └─────────────┘            │
 ```
@@ -164,7 +164,7 @@ result = await mcp.run_parser(
 pytest tests/ -v
 
 # With coverage
-pytest tests/ --cov=aparser_cli --cov-report=html
+pytest tests/ --cov=ayga_cli --cov-report=html
 
 # Specific test file
 pytest tests/test_http_client.py -v
@@ -187,7 +187,7 @@ MIT License — see [LICENSE](LICENSE) file.
 
 ## 🙏 Credits
 
-- **A-Parser**: https://a-parser.com/
+- **ayga-parser**: https://ayga-parser.com/
 - **Typer**: https://typer.tiangolo.com/
 - **MCP**: https://modelcontextprotocol.io/
 

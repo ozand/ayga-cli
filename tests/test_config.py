@@ -1,24 +1,24 @@
-"""Tests for A-Parser CLI configuration."""
+"""Tests for ayga-parser CLI configuration."""
 
 import pytest
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 from pydantic import ValidationError
 
-from aparser_cli.config import AParserConfig, get_config, get_config_dir, reload_config
+from ayga_cli.config import ayga-parserConfig, get_config, get_config_dir, reload_config
 
 
-class TestAParserConfig:
-    """Test suite for AParserConfig."""
+class Testayga-parserConfig:
+    """Test suite for ayga-parserConfig."""
 
     def test_default_values(self):
         """Test default configuration values."""
-        config = AParserConfig()
+        config = ayga-parserConfig()
         assert config.http_url == "http://127.0.0.1:9091/API"
         assert config.redis_host == "127.0.0.1"
         assert config.redis_port == 6379
-        assert config.redis_queue == "aparser_redis_api"
-        assert config.redis_result_queue == "aparser_results"
+        assert config.redis_queue == "ayga-parser_redis_api"
+        assert config.redis_result_queue == "ayga-parser_results"
         assert config.redis_db == 0
         assert config.redis_ssl is False
         assert config.default_timeout == 300
@@ -28,7 +28,7 @@ class TestAParserConfig:
 
     def test_custom_values(self):
         """Test custom configuration values."""
-        config = AParserConfig(
+        config = ayga-parserConfig(
             http_url="https://example.com:8080/API",
             redis_host="redis.example.com",
             redis_port=6380,
@@ -44,87 +44,87 @@ class TestAParserConfig:
     def test_http_url_validation(self):
         """Test HTTP URL validation."""
         # Valid URLs
-        config = AParserConfig(http_url="http://localhost:9091/API")
+        config = ayga-parserConfig(http_url="http://localhost:9091/API")
         assert config.http_url == "http://localhost:9091/API"
         
-        config = AParserConfig(http_url="https://example.com/API/")
+        config = ayga-parserConfig(http_url="https://example.com/API/")
         assert config.http_url == "https://example.com/API"
 
     def test_http_url_validation_invalid(self):
         """Test HTTP URL validation with invalid URL."""
         with pytest.raises(ValidationError) as exc_info:
-            AParserConfig(http_url="ftp://invalid.com")
+            ayga-parserConfig(http_url="ftp://invalid.com")
         assert "HTTP URL must start with http:// or https://" in str(exc_info.value)
 
     def test_redis_port_validation(self):
         """Test Redis port validation."""
         # Valid port
-        config = AParserConfig(redis_port=1)
+        config = ayga-parserConfig(redis_port=1)
         assert config.redis_port == 1
         
-        config = AParserConfig(redis_port=65535)
+        config = ayga-parserConfig(redis_port=65535)
         assert config.redis_port == 65535
 
     def test_redis_port_validation_invalid(self):
         """Test Redis port validation with invalid ports."""
         with pytest.raises(ValidationError):
-            AParserConfig(redis_port=0)
+            ayga-parserConfig(redis_port=0)
         
         with pytest.raises(ValidationError):
-            AParserConfig(redis_port=65536)
+            ayga-parserConfig(redis_port=65536)
 
     def test_log_level_validation(self):
         """Test log level validation."""
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         for level in valid_levels:
-            config = AParserConfig(log_level=level)
+            config = ayga-parserConfig(log_level=level)
             assert config.log_level == level
 
     def test_log_level_validation_invalid(self):
         """Test log level validation with invalid level."""
         with pytest.raises(ValidationError):
-            AParserConfig(log_level="INVALID")
+            ayga-parserConfig(log_level="INVALID")
 
     def test_get_password_from_config(self):
         """Test getting password from config."""
         from pydantic import SecretStr
-        config = AParserConfig(password=SecretStr("my_secret"))
+        config = ayga-parserConfig(password=SecretStr("my_secret"))
         assert config.get_password() == "my_secret"
 
     def test_get_password_from_keyring(self):
         """Test getting password from keyring fallback."""
-        with patch("aparser_cli.config.keyring.get_password") as mock_get:
+        with patch("ayga_cli.config.keyring.get_password") as mock_get:
             mock_get.return_value = "keyring_password"
-            config = AParserConfig()
+            config = ayga-parserConfig()
             assert config.get_password() == "keyring_password"
-            mock_get.assert_called_once_with("aparser-cli", "api")
+            mock_get.assert_called_once_with("ayga-cli", "api")
 
     def test_get_password_not_found(self):
         """Test getting password when not configured."""
-        with patch("aparser_cli.config.keyring.get_password") as mock_get:
+        with patch("ayga_cli.config.keyring.get_password") as mock_get:
             mock_get.return_value = None
-            config = AParserConfig()
+            config = ayga-parserConfig()
             assert config.get_password() is None
 
     def test_set_password_keyring(self):
         """Test storing password in keyring."""
-        with patch("aparser_cli.config.keyring.set_password") as mock_set:
-            config = AParserConfig()
+        with patch("ayga_cli.config.keyring.set_password") as mock_set:
+            config = ayga-parserConfig()
             config.set_password_keyring("new_password")
-            mock_set.assert_called_once_with("aparser-cli", "api", "new_password")
+            mock_set.assert_called_once_with("ayga-cli", "api", "new_password")
 
     def test_set_password_keyring_failure(self):
         """Test keyring storage failure."""
-        with patch("aparser_cli.config.keyring.set_password") as mock_set:
+        with patch("ayga_cli.config.keyring.set_password") as mock_set:
             mock_set.side_effect = Exception("Keyring error")
-            config = AParserConfig()
+            config = ayga-parserConfig()
             with pytest.raises(RuntimeError) as exc_info:
                 config.set_password_keyring("new_password")
             assert "Failed to store password in keyring" in str(exc_info.value)
 
     def test_get_redis_url_no_auth(self):
         """Test Redis URL generation without auth."""
-        config = AParserConfig(
+        config = ayga-parserConfig(
             redis_host="localhost",
             redis_port=6379,
             redis_db=0,
@@ -134,7 +134,7 @@ class TestAParserConfig:
     def test_get_redis_url_with_auth(self):
         """Test Redis URL generation with auth."""
         from pydantic import SecretStr
-        config = AParserConfig(
+        config = ayga-parserConfig(
             redis_host="localhost",
             redis_port=6379,
             redis_db=0,
@@ -144,7 +144,7 @@ class TestAParserConfig:
 
     def test_get_redis_url_ssl(self):
         """Test Redis URL generation with SSL."""
-        config = AParserConfig(
+        config = ayga-parserConfig(
             redis_host="localhost",
             redis_port=6380,
             redis_ssl=True,
@@ -153,9 +153,9 @@ class TestAParserConfig:
 
     def test_get_config_dir(self):
         """Test getting config directory."""
-        config_dir = AParserConfig.get_config_dir()
+        config_dir = ayga-parserConfig.get_config_dir()
         assert isinstance(config_dir, Path)
-        assert config_dir.name == "aparser-cli"
+        assert config_dir.name == "ayga-cli"
         assert config_dir == get_config_dir()
         assert config_dir.parent.name == "Roaming"
 
@@ -163,28 +163,28 @@ class TestAParserConfig:
         """Test Windows config directory resolution."""
         appdata = Path("C:/Users/test/AppData/Roaming")
         monkeypatch.setenv("APPDATA", str(appdata))
-        with patch("aparser_cli.config.sys.platform", "win32"):
+        with patch("ayga_cli.config.sys.platform", "win32"):
             config_dir = get_config_dir()
-        assert config_dir == appdata / "aparser-cli"
+        assert config_dir == appdata / "ayga-cli"
 
     def test_get_config_dir_macos(self):
         """Test macOS config directory resolution."""
-        with patch("aparser_cli.config.sys.platform", "darwin"):
-            with patch("aparser_cli.config.Path.home", return_value=Path("/Users/test")):
+        with patch("ayga_cli.config.sys.platform", "darwin"):
+            with patch("ayga_cli.config.Path.home", return_value=Path("/Users/test")):
                 config_dir = get_config_dir()
-        assert config_dir == Path("/Users/test/Library/Application Support/aparser-cli")
+        assert config_dir == Path("/Users/test/Library/Application Support/ayga-cli")
 
     def test_get_config_dir_linux(self):
         """Test Linux config directory resolution."""
-        with patch("aparser_cli.config.sys.platform", "linux"):
-            with patch("aparser_cli.config.Path.home", return_value=Path("/home/test")):
+        with patch("ayga_cli.config.sys.platform", "linux"):
+            with patch("ayga_cli.config.Path.home", return_value=Path("/home/test")):
                 config_dir = get_config_dir()
-        assert config_dir == Path("/home/test/.config/aparser-cli")
+        assert config_dir == Path("/home/test/.config/ayga-cli")
 
     def test_ensure_config_dir(self):
         """Test ensuring config directory exists."""
         with patch("pathlib.Path.mkdir") as mock_mkdir:
-            config_dir = AParserConfig.ensure_config_dir()
+            config_dir = ayga-parserConfig.ensure_config_dir()
             mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
             assert isinstance(config_dir, Path)
 

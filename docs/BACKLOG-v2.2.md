@@ -1,27 +1,27 @@
-# A-Parser CLI v2.2 — Список доработок
+# ayga-parser CLI v2.2 — Список доработок
 
 **Дата:** 2026-03-08  
-**На основе:** Уроков из интеграции с реальным A-Parser API
+**На основе:** Уроков из интеграции с реальным ayga-parser API
 
 ---
 
 ## 🔴 Критичные (P0) — Блокируют production использование
 
 ### 1. Убрать несуществующий метод `sync`
-**Проблема:** Команда `aparser parsers sync` пытается вызвать `getParsersList`, которого нет в API  
+**Проблема:** Команда `ayga-parser parsers sync` пытается вызвать `getParsersList`, которого нет в API  
 **Решение:** 
 - Удалить команду `sync` из CLI
 - Создать статический manifest с топ-50 парсерами
-- Добавить команду `aparser parsers list-static` для просмотра известных парсеров
+- Добавить команду `ayga-parser parsers list-static` для просмотра известных парсеров
 
-**Файлы:** `src/aparser_cli/commands/parsers.py`, `src/aparser_cli/manifest.py`
+**Файлы:** `src/ayga_cli/commands/parsers.py`, `src/ayga_cli/manifest.py`
 
 ---
 
 ### 2. Добавить статический manifest с популярными парсерами
 **Проблема:** Нет способа узнать доступные парсеры без обращения к API  
 **Решение:**
-- Создать `src/aparser_cli/static_manifest.json` с 50+ популярными парсерами
+- Создать `src/ayga_cli/static_manifest.json` с 50+ популярными парсерами
 - Включить: FreeAI::Perplexity, FreeAI::ChatGPT, SE::Google, Net::Whois и др.
 - Для каждого парсера: название, категория, описание, required overrides
 
@@ -33,10 +33,10 @@
 **Проблема:** Perplexity требует `proxyChecker: reproxy_v4`, но это неочевидно  
 **Решение:**
 - Добавить поле `requiredOverrides` в static manifest
-- При вызове `aparser parsers info FreeAI::Perplexity` показывать required overrides
+- При вызове `ayga-parser parsers info FreeAI::Perplexity` показывать required overrides
 - Добавить валидацию: если proxyChecker не указан — предупреждение
 
-**Файлы:** `src/aparser_cli/commands/parsers.py`, static manifest
+**Файлы:** `src/ayga_cli/commands/parsers.py`, static manifest
 
 ---
 
@@ -45,26 +45,26 @@
 ### 4. Улучшить команду `run` — добавить примеры использования
 **Проблема:** Неочевидно, какие overrides нужны для каждого парсера  
 **Решение:**
-- `aparser run FreeAI::Perplexity --examples` — показать примеры запросов
+- `ayga-parser run FreeAI::Perplexity --examples` — показать примеры запросов
 - Автоматически подставлять `proxyChecker: reproxy_v4` для Perplexity
 - Валидация перед отправкой: проверить все required overrides
 
-**Файлы:** `src/aparser_cli/commands/run.py`
+**Файлы:** `src/ayga_cli/commands/run.py`
 
 ---
 
 ### 5. Добавить команду `test` для проверки конфигурации
 **Проблема:** Сложно понять, работает ли парсер без реального запроса  
 **Решение:**
-- `aparser test FreeAI::Perplexity` — выполнить тестовый запрос с `query: "test"`
+- `ayga-parser test FreeAI::Perplexity` — выполнить тестовый запрос с `query: "test"`
 - Показать результат и логи
 - Полезно для проверки proxyChecker и других настроек
 
-**Файлы:** Новый файл `src/aparser_cli/commands/test.py`
+**Файлы:** Новый файл `src/ayga_cli/commands/test.py`
 
 ---
 
-### 6. Улучшить обработку ошибок A-Parser API
+### 6. Улучшить обработку ошибок ayga-parser API
 **Проблема:** Ошибки прокси неинформативны ("500 Internal Server Error")  
 **Решение:**
 - Парсить логи из ответа API
@@ -73,7 +73,7 @@
   - "Timeout: увеличьте значение timeout override"
 - Добавить ссылку на документацию по troubleshooting
 
-**Файлы:** `src/aparser_cli/client/http.py`, `src/aparser_cli/exceptions.py`
+**Файлы:** `src/ayga_cli/client/http.py`, `src/ayga_cli/exceptions.py`
 
 ---
 
@@ -82,22 +82,22 @@
 ### 7. Добавить шаблоны запросов (presets)
 **Проблема:** Каждый раз писать overrides утомительно  
 **Решение:**
-- `aparser presets list` — список шаблонов
-- `aparser presets save perplexity-business "FreeAI::Perplexity" --overrides "proxyChecker=reproxy_v4,timeout=120"`
-- `aparser run --preset perplexity-business "запрос"`
+- `ayga-parser presets list` — список шаблонов
+- `ayga-parser presets save perplexity-business "FreeAI::Perplexity" --overrides "proxyChecker=reproxy_v4,timeout=120"`
+- `ayga-parser run --preset perplexity-business "запрос"`
 
-**Файлы:** Новый модуль `src/aparser_cli/presets.py`
+**Файлы:** Новый модуль `src/ayga_cli/presets.py`
 
 ---
 
 ### 8. Интеграция с Redis очередью
-**Проблема:** Не используем Redis API A-Parser  
+**Проблема:** Не используем Redis API ayga-parser  
 **Решение:**
-- Добавить команду `aparser redis status` — проверить очередь
-- `aparser redis push` — добавить задачу в Redis вместо HTTP
+- Добавить команду `ayga-parser redis status` — проверить очередь
+- `ayga-parser redis push` — добавить задачу в Redis вместо HTTP
 - Полезно для batch processing
 
-**Файлы:** `src/aparser_cli/client/redis.py`, команды
+**Файлы:** `src/ayga_cli/client/redis.py`, команды
 
 ---
 
@@ -119,9 +119,9 @@
 
 ## ✅ Acceptance Criteria
 
-- [ ] `aparser parsers list-static` показывает 50+ парсеров
-- [ ] `aparser parsers info FreeAI::Perplexity` показывает required overrides
-- [ ] `aparser test FreeAI::Perplexity` выполняет тестовый запрос
-- [ ] `aparser run FreeAI::Perplexity "query"` автоматически подставляет proxyChecker
+- [ ] `ayga-parser parsers list-static` показывает 50+ парсеров
+- [ ] `ayga-parser parsers info FreeAI::Perplexity` показывает required overrides
+- [ ] `ayga-parser test FreeAI::Perplexity` выполняет тестовый запрос
+- [ ] `ayga-parser run FreeAI::Perplexity "query"` автоматически подставляет proxyChecker
 - [ ] Ошибки прокси показывают понятное сообщение с рекомендацией
 - [ ] Все 141 тест проходят + новые тесты для новых команд

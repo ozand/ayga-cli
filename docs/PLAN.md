@@ -1,5 +1,5 @@
 # Development Plan
-# A-Parser CLI Tool & AYGA MCP Integration
+# ayga-parser CLI Tool & AYGA MCP Integration
 
 **Date:** 2026-03-07
 **Epic:** P-XXX
@@ -9,22 +9,22 @@
 **Goal:** Create a robust Typer-based CLI with basic HTTP API support.
 
 - [ ] **Task 1.1:** Scaffold project structure (Typer, pyproject.toml, pytest).
-- [ ] **Task 1.2:** Implement robust `Config` class using Pydantic (loading from `~/.config/aparser/` and ENV).
-- [ ] **Task 1.3:** Build `AparserHttpClient` wrapping all 17 documented API methods.
+- [ ] **Task 1.2:** Implement robust `Config` class using Pydantic (loading from `~/.config/ayga-parser/` and ENV).
+- [ ] **Task 1.3:** Build `ayga-parserHttpClient` wrapping all 17 documented API methods.
 - [ ] **Task 1.4:** Implement basic CLI commands: `ping`, `info`, `parsers list`.
-- [ ] **Task 1.5:** Implement `aparser http request` command for synchronous parsing.
+- [ ] **Task 1.5:** Implement `ayga-parser http request` command for synchronous parsing.
 
 ## Phase 2: Redis Asynchronous Queue (Week 2)
 **Goal:** High-throughput queuing system.
 
-- [ ] **Task 2.1:** Implement `AparserRedisClient` using `redis.asyncio`.
-- [ ] **Task 2.2:** Build `aparser redis push` command (LPUSH to `aparser_redis_api`).
-- [ ] **Task 2.3:** Build `aparser redis wait` (BLPOP from `aparser_results` with timeout).
-- [ ] **Task 2.4:** Build pipeline tools: `aparser bulk --file domains.txt --async`.
+- [ ] **Task 2.1:** Implement `ayga-parserRedisClient` using `redis.asyncio`.
+- [ ] **Task 2.2:** Build `ayga-parser redis push` command (LPUSH to `ayga-parser_redis_api`).
+- [ ] **Task 2.3:** Build `ayga-parser redis wait` (BLPOP from `ayga-parser_results` with timeout).
+- [ ] **Task 2.4:** Build pipeline tools: `ayga-parser bulk --file domains.txt --async`.
 - [ ] **Task 2.5:** Add Rich-based progress bars for blocking waits.
 
 ## Phase 3: AYGA MCP Integration (Week 3)
-**Goal:** Make A-Parser accessible to AI Agents natively.
+**Goal:** Make ayga-parser accessible to AI Agents natively.
 
 - [ ] **Task 3.1:** Scaffold simple MCP Server using Anthropic/Ayga SDK.
 - [ ] **Task 3.2:** Expose `get_parsers_list` as an MCP tool.

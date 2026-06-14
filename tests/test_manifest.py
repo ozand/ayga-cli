@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from aparser_cli.manifest import (
+from ayga_cli.manifest import (
     Manifest,
     ManifestCache,
     ParserInfo,
@@ -220,7 +220,7 @@ class TestSearch:
 
     def test_exact_match(self):
         """Test exact name match."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parser = ParserInfo(name="SE::Google", description="Google parser", category="SE")
         manifest = Manifest(parsers={"SE::Google": parser})
@@ -235,7 +235,7 @@ class TestSearch:
 
     def test_partial_match(self):
         """Test partial name match."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parser = ParserInfo(name="SE::Google", description="Google parser", category="SE")
         manifest = Manifest(parsers={"SE::Google": parser})
@@ -249,7 +249,7 @@ class TestSearch:
 
     def test_description_match(self):
         """Test description matching."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parser = ParserInfo(name="SE::Google", description="Search engine parser", category="SE")
         manifest = Manifest(parsers={"SE::Google": parser})
@@ -263,7 +263,7 @@ class TestSearch:
 
     def test_category_filter(self):
         """Test category filtering."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         google = ParserInfo(name="SE::Google", description="Google search", category="SE")
         yandex = ParserInfo(name="SE::Yandex", description="Yandex search", category="SE")
@@ -285,7 +285,7 @@ class TestSearch:
 
     def test_limit(self):
         """Test result limiting."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parsers = {
             f"Parser{i}": ParserInfo(name=f"Parser{i}", description=f"Desc{i}", category="Test")
@@ -301,7 +301,7 @@ class TestSearch:
 
     def test_min_confidence(self):
         """Test minimum confidence threshold."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parser = ParserInfo(name="SE::Google", description="Google parser", category="SE")
         manifest = Manifest(parsers={"SE::Google": parser})
@@ -315,7 +315,7 @@ class TestSearch:
 
     def test_suggest_parsers(self):
         """Test parser suggestions."""
-        from aparser_cli.manifest import FuzzySearchIndex
+        from ayga_cli.manifest import FuzzySearchIndex
 
         parser = ParserInfo(name="SE::Google", description="Google parser", category="SE")
         manifest = Manifest(parsers={"SE::Google": parser})
@@ -339,7 +339,7 @@ class TestGlobalFunctions:
     def test_clear_cache(self, tmp_path):
         """Test global clear function."""
         # Reset singleton for test
-        import aparser_cli.manifest as mod
+        import ayga_cli.manifest as mod
         mod._cache_instance = None
 
         cache = get_manifest_cache()

@@ -1,4 +1,4 @@
-# A-Parser CLI v2.3
+# ayga-parser CLI v2.3
 
 **Google API Pool & Parser Management Tool**
 
@@ -10,7 +10,7 @@
 
 ## 🎯 Описание
 
-A-Parser CLI — кросс-платформенный инструмент для управления Google API с автоматической ротацией аккаунтов.
+ayga-parser CLI — кросс-платформенный инструмент для управления Google API с автоматической ротацией аккаунтов.
 
 **Возможности:**
 - ✅ **Google API Pool** — управление 50+ аккаунтами
@@ -28,7 +28,7 @@ A-Parser CLI — кросс-платформенный инструмент дл
 ```powershell
 # 1. Скачать установочный скрипт
 $githubToken = "ghp_YOUR_GITHUB_TOKEN"
-$rawUrl = "https://raw.githubusercontent.com/ozand/aparser-cli/main/scripts/install.ps1"
+$rawUrl = "https://raw.githubusercontent.com/ozand/ayga-cli/main/scripts/install.ps1"
 $headers = @{ Authorization = "token $githubToken" }
 Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install.ps1"
 
@@ -36,21 +36,21 @@ Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install.ps1
 & "$env:TEMP\install.ps1"
 
 # 3. Проверить
-aparser --version
+ayga-parser --version
 ```
 
 ### macOS / Linux
 
 ```bash
 # 1. Клонировать репозиторий
-git clone https://github.com/ozand/aparser-cli.git
-cd aparser-cli
+git clone https://github.com/ozand/ayga-cli.git
+cd ayga-cli
 
 # 2. Установить
 pip install -e .
 
 # 3. Проверить
-aparser --version
+ayga-parser --version
 ```
 
 ---
@@ -72,39 +72,39 @@ aparser --version
 
 ```bash
 # Инициализация
-aparser init
+ayga-parser init
 
 # Добавить API ключ
-aparser keys-add google_001 gemini AIzaSy...
+ayga-parser keys-add google_001 gemini AIzaSy...
 
 # Список ключей
-aparser keys-list
+ayga-parser keys-list
 
 # Поиск через Gemini
-aparser search "OpenClaw competitors"
+ayga-parser search "OpenClaw competitors"
 
 # Поиск компаний (Places API)
-aparser business "Yandex" --location "Moscow"
+ayga-parser business "Yandex" --location "Moscow"
 
 # Геокодирование
-aparser geocode "Red Square, Moscow"
+ayga-parser geocode "Red Square, Moscow"
 
 # Статистика пула
-aparser stats
+ayga-parser stats
 ```
 
 ### MCP Server (для агентов)
 
 ```bash
 # Запустить MCP server
-aparser-mcp
+ayga-parser-mcp
 
 # Интеграция с Claude Code
 # ~/.claude/settings.json:
 {
   "mcpServers": {
-    "aparser": {
-      "command": "aparser-mcp"
+    "ayga-parser": {
+      "command": "ayga-parser-mcp"
     }
   }
 }
@@ -116,7 +116,7 @@ aparser-mcp
 
 ```
 ┌─────────────────────────────────────────┐
-│           A-Parser CLI                  │
+│           ayga-parser CLI                  │
 ├─────────────────────────────────────────┤
 │  CLI (Typer)                            │
 │  ├── init, keys-add/list                │
@@ -171,8 +171,8 @@ dependencies = [
 
 ```bash
 # Клонировать
-git clone https://github.com/ozand/aparser-cli.git
-cd aparser-cli
+git clone https://github.com/ozand/ayga-cli.git
+cd ayga-cli
 
 # Создать venv
 python -m venv .venv
@@ -215,8 +215,8 @@ mypy src/
 
 ## 📞 Поддержка
 
-- **Issues:** https://github.com/ozand/aparser-cli/issues
-- **Discussions:** https://github.com/ozand/aparser-cli/discussions
+- **Issues:** https://github.com/ozand/ayga-cli/issues
+- **Discussions:** https://github.com/ozand/ayga-cli/discussions
 - **Contact:** @ozand (Telegram)
 
 ---

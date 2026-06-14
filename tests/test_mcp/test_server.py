@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from aparser_cli.mcp.server import (
+from ayga_cli.mcp.server import (
     list_tools,
     call_tool,
     _search_parsers,
@@ -11,7 +11,7 @@ from aparser_cli.mcp.server import (
     _validate_parser_call,
     _run_parser,
 )
-from aparser_cli.manifest import ParserInfo, ParameterSchema, Manifest, FuzzySearchIndex, ParserMatch
+from ayga_cli.manifest import ParserInfo, ParameterSchema, Manifest, FuzzySearchIndex, ParserMatch
 
 
 class TestListTools:
@@ -83,7 +83,7 @@ class TestCallTool:
     @pytest.mark.asyncio
     async def test_call_search_parsers(self):
         """Test calling search_parsers via call_tool."""
-        with patch("aparser_cli.mcp.server._search_parsers") as mock_search:
+        with patch("ayga_cli.mcp.server._search_parsers") as mock_search:
             mock_search.return_value = {"success": True, "results": []}
 
             result = await call_tool("search_parsers", {"query": "test"})
@@ -94,7 +94,7 @@ class TestCallTool:
     @pytest.mark.asyncio
     async def test_call_get_parser_schema(self):
         """Test calling get_parser_schema via call_tool."""
-        with patch("aparser_cli.mcp.server._get_parser_schema") as mock_schema:
+        with patch("ayga_cli.mcp.server._get_parser_schema") as mock_schema:
             mock_schema.return_value = {"success": True, "name": "Test"}
 
             result = await call_tool("get_parser_schema", {"parser": "SE::Google"})
@@ -105,7 +105,7 @@ class TestCallTool:
     @pytest.mark.asyncio
     async def test_call_validate_parser_call(self):
         """Test calling validate_parser_call via call_tool."""
-        with patch("aparser_cli.mcp.server._validate_parser_call") as mock_validate:
+        with patch("ayga_cli.mcp.server._validate_parser_call") as mock_validate:
             mock_validate.return_value = {"success": True, "valid": True}
 
             result = await call_tool("validate_parser_call", {
@@ -119,7 +119,7 @@ class TestCallTool:
     @pytest.mark.asyncio
     async def test_call_run_parser(self):
         """Test calling run_parser via call_tool."""
-        with patch("aparser_cli.mcp.server._run_parser") as mock_run:
+        with patch("ayga_cli.mcp.server._run_parser") as mock_run:
             mock_run.return_value = {"status": "queued", "job_id": "test_queue"}
 
             result = await call_tool("run_parser", {
@@ -152,8 +152,8 @@ class TestSearchParsers:
         )
         manifest = Manifest(parsers={"SE::Google": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache, \
-             patch("aparser_cli.mcp.server.FuzzySearchIndex") as MockIndex:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache, \
+             patch("ayga_cli.mcp.server.FuzzySearchIndex") as MockIndex:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             mock_cache.get_age_hours.return_value = 0.5
@@ -182,8 +182,8 @@ class TestSearchParsers:
         )
         manifest = Manifest(parsers={"Net::Whois": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache, \
-             patch("aparser_cli.mcp.server.FuzzySearchIndex") as MockIndex:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache, \
+             patch("ayga_cli.mcp.server.FuzzySearchIndex") as MockIndex:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             mock_cache.get_age_hours.return_value = 0.5
@@ -206,8 +206,8 @@ class TestSearchParsers:
         """Test parser search with no matches."""
         manifest = Manifest(parsers={})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache, \
-             patch("aparser_cli.mcp.server.FuzzySearchIndex") as MockIndex:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache, \
+             patch("ayga_cli.mcp.server.FuzzySearchIndex") as MockIndex:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             mock_cache.get_age_hours.return_value = 0.5
@@ -231,8 +231,8 @@ class TestSearchParsers:
         ]
         manifest = Manifest(parsers={p.name: p for p in mock_parsers})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache, \
-             patch("aparser_cli.mcp.server.FuzzySearchIndex") as MockIndex:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache, \
+             patch("ayga_cli.mcp.server.FuzzySearchIndex") as MockIndex:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             mock_cache.get_age_hours.return_value = 0.5
@@ -275,7 +275,7 @@ class TestGetParserSchema:
         )
         manifest = Manifest(parsers={"FreeAI::Perplexity": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             MockCache.return_value = mock_cache
@@ -294,8 +294,8 @@ class TestGetParserSchema:
         """Test getting schema for non-existent parser."""
         manifest = Manifest(parsers={})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache, \
-             patch("aparser_cli.mcp.server.FuzzySearchIndex") as MockIndex:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache, \
+             patch("ayga_cli.mcp.server.FuzzySearchIndex") as MockIndex:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             MockCache.return_value = mock_cache
@@ -333,7 +333,7 @@ class TestValidateParserCall:
         )
         manifest = Manifest(parsers={"SE::Google": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             MockCache.return_value = mock_cache
@@ -367,7 +367,7 @@ class TestValidateParserCall:
         )
         manifest = Manifest(parsers={"SE::Google": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             MockCache.return_value = mock_cache
@@ -402,7 +402,7 @@ class TestValidateParserCall:
         )
         manifest = Manifest(parsers={"SE::Google": mock_parser})
 
-        with patch("aparser_cli.mcp.server.ManifestCache") as MockCache:
+        with patch("ayga_cli.mcp.server.ManifestCache") as MockCache:
             mock_cache = MagicMock()
             mock_cache.load.return_value = manifest
             MockCache.return_value = mock_cache
@@ -424,7 +424,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_async_mode(self):
         """Test running parser in async mode."""
-        with patch("aparser_cli.mcp.server.AParserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue_123"
             MockRedis.return_value = mock_client
@@ -442,7 +442,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_sync_mode(self):
         """Test running parser in sync mode."""
-        with patch("aparser_cli.mcp.server.AParserHttpClient") as MockHttp:
+        with patch("ayga_cli.mcp.server.ayga-parserHttpClient") as MockHttp:
             mock_client = AsyncMock()
             mock_client.one_request.return_value = {"data": {"results": []}}
             MockHttp.return_value = mock_client
@@ -459,7 +459,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_options(self):
         """Test running parser with options."""
-        with patch("aparser_cli.mcp.server.AParserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -476,7 +476,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_from_json_options(self):
         """Test running parser with from_json options."""
-        with patch("aparser_cli.mcp.server.AParserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -493,7 +493,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_preset(self):
         """Test running parser with custom preset."""
-        with patch("aparser_cli.mcp.server.AParserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.return_value = "test_queue"
             MockRedis.return_value = mock_client
@@ -510,7 +510,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_with_timeout(self):
         """Test running parser with custom timeout."""
-        with patch("aparser_cli.mcp.server.AParserHttpClient") as MockHttp:
+        with patch("ayga_cli.mcp.server.ayga-parserHttpClient") as MockHttp:
             mock_client = AsyncMock()
             mock_client.one_request.return_value = {"data": {"results": []}}
             MockHttp.return_value = mock_client
@@ -527,7 +527,7 @@ class TestRunParser:
     @pytest.mark.asyncio
     async def test_run_parser_error_handling(self):
         """Test error handling in run_parser."""
-        with patch("aparser_cli.mcp.server.AParserRedisClient") as MockRedis:
+        with patch("ayga_cli.mcp.server.ayga-parserRedisClient") as MockRedis:
             mock_client = AsyncMock()
             mock_client.push.side_effect = Exception("Connection failed")
             MockRedis.return_value = mock_client

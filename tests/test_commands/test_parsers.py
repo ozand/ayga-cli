@@ -1,11 +1,11 @@
 """Tests for parsers command."""
 
 import pytest
-from aparser_cli.manifest import Manifest, ParserInfo
+from ayga_cli.manifest import Manifest, ParserInfo
 from typer.testing import CliRunner
 from unittest.mock import AsyncMock, patch
 
-from aparser_cli.main import app
+from ayga_cli.main import app
 
 runner = CliRunner()
 
@@ -26,7 +26,7 @@ class TestParsersListCommand:
                 "SE::Google": ParserInfo(name="SE::Google", description="Google parser", category="SE", presets=["default"])
             }
         )
-        with patch("aparser_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
+        with patch("ayga_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
             result = runner.invoke(app, ["parsers", "list"])
         assert result.exit_code == 0
         assert "SE::Google" in result.output
@@ -38,7 +38,7 @@ class TestParsersListCommand:
                 "SE::Google": ParserInfo(name="SE::Google", description="Google parser", category="SE", presets=["default"])
             }
         )
-        with patch("aparser_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
+        with patch("ayga_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
             result = runner.invoke(app, ["parsers", "list", "--json"])
         assert result.exit_code == 0
         import json
@@ -52,7 +52,7 @@ class TestParsersListCommand:
                 "SE::Google": ParserInfo(name="SE::Google", description="Google parser", category="SE", presets=["default"])
             }
         )
-        with patch("aparser_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
+        with patch("ayga_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
             result = runner.invoke(app, ["parsers", "list", "--category", "SE"])
         assert result.exit_code == 0
 
@@ -63,7 +63,7 @@ class TestParsersListCommand:
                 "SE::Google": ParserInfo(name="SE::Google", description="Google parser", category="SE", presets=["default"])
             }
         )
-        with patch("aparser_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
+        with patch("ayga_cli.commands.parsers._load_manifest_with_fallback", return_value=manifest):
             result = runner.invoke(app, ["parsers", "list", "--no-cache"])
         assert result.exit_code == 0
 

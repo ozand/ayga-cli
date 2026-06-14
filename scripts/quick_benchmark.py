@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Quick benchmark for A-Parser CLI utility features."""
+"""Quick benchmark for ayga-parser CLI utility features."""
 
 import time
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aparser_cli.manifest import Manifest, ParserInfo, FuzzySearchIndex
+from ayga_cli.manifest import Manifest, ParserInfo, FuzzySearchIndex
 
 
 def create_test_manifest(num_parsers: int = 1000) -> Manifest:
@@ -31,7 +31,7 @@ def create_test_manifest(num_parsers: int = 1000) -> Manifest:
 
 def main():
     print("=" * 60)
-    print("A-Parser CLI Quick Benchmark")
+    print("ayga-parser CLI Quick Benchmark")
     print("=" * 60)
 
     # Create manifest

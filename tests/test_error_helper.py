@@ -2,7 +2,7 @@
 
 import pytest
 
-from aparser_cli.utils.error_helper import (
+from ayga_cli.utils.error_helper import (
     ERROR_PATTERNS,
     PARSER_DOCS,
     format_error_for_cli,
@@ -65,7 +65,7 @@ class TestParseApiError:
         assert result["message"] == "Server error (possibly proxy-related)"
         assert "proxy settings" in result["recommendation"]
         # Without parser_name and with non-matching parser in logs, should get generic docs
-        assert result["docs_link"] == "https://a-parser.com/docs"
+        assert result["docs_link"] == "https://ayga-parser.com/docs"
 
     def test_500_error_with_parser_context(self):
         """Test parsing 500 error with parser context adds specific docs."""
@@ -111,7 +111,7 @@ class TestParseApiError:
         result = parse_api_error(response_data)
 
         assert result["message"] == "Some custom error message"
-        assert result["docs_link"] == "https://a-parser.com/docs"
+        assert result["docs_link"] == "https://ayga-parser.com/docs"
 
     def test_unknown_error_with_logs(self):
         """Test parsing unknown error with only logs."""
@@ -161,8 +161,8 @@ class TestFormatErrorForCli:
         error_info = {
             "message": "Proxy connection failed",
             "recommendation": "Try specifying proxyChecker override",
-            "example": 'aparser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
-            "docs_link": "https://a-parser.com/docs/parsers/freeai-perplexity",
+            "example": 'ayga-parser run FreeAI::Perplexity "query" --overrides "proxyChecker=reproxy_v4"',
+            "docs_link": "https://ayga-parser.com/docs/parsers/freeai-perplexity",
             "full_logs": ["log1", "log2"],
         }
 
@@ -179,7 +179,7 @@ class TestFormatErrorForCli:
         error_info = {
             "message": "Proxy connection failed",
             "recommendation": "Try specifying proxyChecker override",
-            "example": 'aparser run ...',
+            "example": 'ayga-parser run ...',
             "docs_link": "https://example.com/docs",
             "full_logs": [
                 "[0] Parser FreeAI::Perplexity::0 parse query test",

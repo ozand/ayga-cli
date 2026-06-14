@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark script for A-Parser CLI performance testing.
+"""Benchmark script for ayga-parser CLI performance testing.
 
 Tests cache loading, fuzzy search, and command completion times.
 """
@@ -12,7 +12,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aparser_cli.manifest import ManifestCache, FuzzySearchIndex, Manifest, ParserInfo
+from ayga_cli.manifest import ManifestCache, FuzzySearchIndex, Manifest, ParserInfo
 
 
 def create_test_manifest(num_parsers: int = 1000) -> Manifest:
@@ -86,7 +86,7 @@ def benchmark_cache_save_load(manifest: Manifest, iterations: int = 10) -> dict:
 
 def benchmark_fuzzy_search(manifest: Manifest, iterations: int = 100) -> dict:
     """Benchmark fuzzy search performance."""
-    from aparser_cli.manifest import FuzzySearchIndex
+    from ayga_cli.manifest import FuzzySearchIndex
 
     # Build search index directly
     engine = FuzzySearchIndex(manifest)
@@ -131,7 +131,7 @@ def benchmark_compression(manifest: Manifest) -> dict:
 def main():
     """Run all benchmarks."""
     print("=" * 60)
-    print("A-Parser CLI Performance Benchmarks")
+    print("ayga-parser CLI Performance Benchmarks")
     print("=" * 60)
 
     # Create test manifest with 1000 parsers
