@@ -1,7 +1,7 @@
 """
-Redis Queue Client for ayga_parser async operations.
+Redis Queue Client for Redis Wrapper async operations.
 
-Provides async Redis-based communication with ayga_parser instances,
+Provides async Redis-based communication with Redis Wrapper instances,
 implementing the primary transport layer for job queuing and result retrieval.
 """
 
@@ -13,26 +13,25 @@ from typing import Any, Optional
 
 import redis.asyncio as redis
 from redis.asyncio import Redis
-from ayga_cli.proxy_strategy import merge_with_proxy
 
 logger = logging.getLogger(__name__)
 
 
 class AygaParserRedisClient:
     """
-    Async Redis client for ayga_parser queue operations.
+    Async Redis client for Redis Wrapper queue operations.
 
     Implements lazy connection to Redis and provides methods for:
-    - Pushing jobs to ayga_parser queue (LPUSH)
+    - Pushing jobs to Redis queue (LPUSH)
     - Retrieving results from result queues (BLPOP)
     - Checking queue depths
+    - Retrieving available sources
 
     Args:
         redis_host: Redis server hostname (default: 127.0.0.1)
         redis_port: Redis server port (default: 6379)
-        redis_queue: Main ayga_parser queue name (default: ayga_parser_redis_api)
+        redis_queue: Main Redis Wrapper queue name (default: ayga_parser_redis_api)
         redis_password: Optional Redis AUTH password
-        password: ayga_parser API password for request authentication
     """
 
     def __init__(
@@ -95,7 +94,8 @@ class AygaParserRedisClient:
         options: Optional[list[dict[str, Any]]] = None,
     ) -> dict[str, Any]:
         """
-        Build ayga_parser request payload.
+        [DEPRECATED] Build ayga_parser request payload.
+        This method is for internal backwards compatibility only.
 
         Args:
             parser: Parser name (e.g., "SE::Google")
@@ -129,86 +129,64 @@ class AygaParserRedisClient:
 
     async def push(
         self,
-        parser: str,
+        source: str,
         query: str,
-        preset: str = "default",
-        config_preset: str = "default",
+        job_id: Optional[str] = None,
         result_queue: Optional[str] = None,
-        options: Optional[list[dict[str, Any]]] = None,
-        as_list: bool = False,
+        metadata: Optional[dict[str, Any]] = None,
     ) -> str:
         """
-        Push a job to the ayga_parser Redis queue.
+        Push a job to the Redis queue.
 
-        Uses LPUSH to add the job to the main ayga_parser queue.
-        ayga_parser will process it and push results to the specified result queue.
+        Uses LPUSH to add the job to the main Redis queue.
+        The Redis Wrapper will process it and push results to the specified result queue.
 
         Args:
-            parser: Parser name (e.g., "SE::Google", "Net::Whois")
-            query: Search query, URL, or target to parse
-            preset: Parser preset name (default: "default")
-            config_preset: Config preset for thread pool settings (default: "default")
-            result_queue: Custom result queue name. If None, ayga_parser uses default.
-            options: List of option overrides, e.g., [{"id": "pagecount", "value": 5}]
-            as_list: If True, serialize as a 6-element JSON array [query_id, parser, preset, query, overrides, api_opts] (preferred for API::Server::Redis worker tasks).
+            source: Abstract source name (e.g., "web-search", "ai-answer")
+            query: Search query, URL, or target
+            job_id: Optional job ID (default: auto-generated ayga_{source}_{timestamp_ms})
+            result_queue: Custom result queue name (default: auto-generated ayga_results_{job_id})
+            metadata: Optional dictionary of extra fields to pass through to Redis Wrapper
 
         Returns:
             str: The result queue name where results will be delivered
 
         Raises:
             redis.RedisError: If Redis operation fails
-            ValueError: If parser or query is empty
+            ValueError: If source or query is empty
         """
-        if not parser:
-            raise ValueError("Parser name cannot be empty")
+        if not source:
+            raise ValueError("Source name cannot be empty")
         if not query:
             raise ValueError("Query cannot be empty")
 
         r = await self._get_redis()
-        actual_result_queue = result_queue or f"ayga_parser_results_{parser.replace('::', '_')}"
-
-        if as_list:
-            import time
-            query_id = f"q_{parser.replace('::', '_').lower()}_{int(time.time() * 1000)}"
-            
-            options = merge_with_proxy(parser, options or [])
-            
-            # Convert options list [{"id": k, "value": v}] to dictionary for the 6-element list overrides
-            override_opts = {}
-            if options:
-                for opt in options:
-                    if isinstance(opt, dict) and "id" in opt and "value" in opt:
-                        override_opts[opt["id"]] = opt["value"]
-            
-            # Build apiOpts. We put output_queue here so that A-Parser writes to the unified queue
-            api_opts = {"output_queue": actual_result_queue}
-            
-            # Build 6-element array: [query_id, parser, preset, query, overrides, api_opts]
-            request_data = [
-                query_id,
-                parser,
-                preset,
-                query,
-                override_opts,
-                api_opts
-            ]
-            request_json = json.dumps(request_data, ensure_ascii=False)
-        else:
-            request = self._build_request(
-                parser=parser,
-                query=query,
-                preset=preset,
-                config_preset=config_preset,
-                result_queue=result_queue,
-                options=options,
-            )
-            request_json = json.dumps(request, ensure_ascii=False)
+        
+        import time
+        timestamp_ms = int(time.time() * 1000)
+        
+        actual_job_id = job_id or f"ayga_{source.replace('-', '_')}_{timestamp_ms}"
+        actual_result_queue = result_queue or f"ayga_results_{actual_job_id}"
+        actual_metadata = metadata or {}
+        
+        api_opts = {"output_queue": actual_result_queue}
+        
+        # Build 6-element array: [job_id, source, query, metadata, api_opts, {}]
+        request_data = [
+            actual_job_id,
+            source,
+            query,
+            actual_metadata,
+            api_opts,
+            {}
+        ]
+        request_json = json.dumps(request_data, ensure_ascii=False)
 
         await r.lpush(self.redis_queue, request_json)
 
         logger.debug(
-            f"Pushed job to queue '{self.redis_queue}' (as_list={as_list}): "
-            f"parser={parser}, query={query[:50]}..., result_queue={actual_result_queue}"
+            f"Pushed job to queue '{self.redis_queue}': "
+            f"source={source}, query={query[:50]}..., result_queue={actual_result_queue}"
         )
 
         return actual_result_queue
@@ -297,6 +275,31 @@ class AygaParserRedisClient:
         logger.debug(f"Queue '{queue_name}' depth: {depth}")
 
         return depth
+
+    async def get_sources(self, sources_queue: str = "ayga_sources") -> list[dict]:
+        """
+        Get the list of available sources from the Redis Wrapper.
+        
+        Args:
+            sources_queue: Name of the sources queue on Redis (default: "ayga_sources")
+            
+        Returns:
+            list[dict]: List of available sources, or empty list if none found
+        """
+        r = await self._get_redis()
+        items = await r.lrange(sources_queue, 0, -1)
+        
+        if not items:
+            return []
+            
+        sources = []
+        for item in items:
+            try:
+                sources.append(json.loads(item))
+            except json.JSONDecodeError:
+                logger.warning(f"Failed to decode source item: {item}")
+                
+        return sources
 
     async def health_check(self) -> bool:
         """
