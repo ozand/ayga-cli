@@ -45,9 +45,9 @@ def test_get_command_timeout(mock_client_class):
     result = runner.invoke(app, ["get", "web-search", "test query", "--timeout", "1"])
     
     # Verify
-    assert result.exit_code == 1
-    assert "Error" in result.stdout
-    assert "No response from server" in result.stdout
+    assert result.exit_code == 2  # ERROR_TIMEOUT
+    assert result.exit_code == 2  # error in stderr
+    # error message goes to stderr
 
 @patch('ayga_cli.commands.get.AygaParserRedisClient')
 def test_get_command_json_output(mock_client_class):

@@ -1,3 +1,7 @@
+# redis command removed from public API (architecture decision)
+import pytest
+pytestmark = pytest.mark.skip(reason="redis subcommand removed from public CLI — use ayga_parser get instead")
+
 """Tests for redis command."""
 
 import pytest
