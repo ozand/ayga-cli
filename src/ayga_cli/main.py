@@ -28,8 +28,9 @@ from ayga_cli.config import AygaParserConfig, get_config, reload_config
 from ayga_cli.commands.ping import app as ping_app
 from ayga_cli.commands.parsers import app as parsers_app
 from ayga_cli.commands.presets import app as presets_app
+from ayga_cli.commands.sources import app as sources_app
 from ayga_cli.commands.redis import app as redis_app
-from ayga_cli.commands.run import run as run_command
+from ayga_cli.commands.get import get_cmd as get_command
 from ayga_cli.commands.test import test_cmd as test_command
 
 # Initialize Rich console for pretty output
@@ -113,13 +114,14 @@ task_app = typer.Typer(
 app.add_typer(config_app)
 app.add_typer(parsers_app, name="parsers")
 app.add_typer(presets_app, name="presets")
+app.add_typer(sources_app, name="sources")
 app.add_typer(redis_app, name="redis")
 app.add_typer(http_app)
 app.add_typer(task_app)
 
 # Add direct commands (not subcommands)
 app.add_typer(ping_app, name="ping")
-app.command(name="run")(run_command)
+app.command(name="get")(get_command)
 app.command(name="test")(test_command)
 
 
