@@ -578,3 +578,16 @@ class AygaParserHttpClient:
 
         result = await self._request("getResults", data)
         return result.get("data", {})
+
+    async def get_proxies(self) -> dict:
+        """Get proxy pool status.
+
+        Returns:
+            Dictionary with proxy counts per checker
+
+        Raises:
+            AygaParserHTTPError: If HTTP request fails
+            AygaParserAPIError: If API returns an error
+        """
+        result = await self._request("getProxies")
+        return result.get("data", {})

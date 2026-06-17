@@ -22,13 +22,14 @@ class TestListTools:
         """Test that list_tools returns available tools."""
         tools = await list_tools()
 
-        assert len(tools) == 4
+        assert len(tools) == 5
 
         tool_names = [t.name for t in tools]
         assert "search_parsers" in tool_names
         assert "get_parser_schema" in tool_names
         assert "validate_parser_call" in tool_names
         assert "run_parser" in tool_names
+        assert "get_proxy_status" in tool_names
 
     @pytest.mark.asyncio
     async def test_search_parsers_tool_schema(self):
@@ -76,6 +77,14 @@ class TestListTools:
         assert "async_mode" in run_tool.inputSchema["properties"]
         assert "options" in run_tool.inputSchema["properties"]
 
+    @pytest.mark.asyncio
+    async def test_get_proxy_status_tool_schema(self):
+        """Test get_proxy_status tool schema."""
+        tools = await list_tools()
+        proxy_tool = next(t for t in tools if t.name == "get_proxy_status")
+
+        assert proxy_tool.name == "get_proxy_status"
+        assert proxy_tool.inputSchema["properties"] == {}
 
 class TestCallTool:
     """Test suite for call_tool."""
@@ -129,6 +138,17 @@ class TestCallTool:
 
             assert len(result) == 1
             mock_run.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_call_get_proxy_status(self):
+        """Test calling get_proxy_status via call_tool."""
+        with patch("ayga_cli.mcp.server._get_proxy_status") as mock_proxy:
+            mock_proxy.return_value = {"checker": 10}
+
+            result = await call_tool("get_proxy_status", {})
+
+            assert len(result) == 1
+            mock_proxy.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_call_unknown_tool_raises(self):
@@ -489,6 +509,30 @@ class TestRunParser:
             )
 
             assert result["success"] is True
+
+    @pytest.mark.asyncio
+    async def test_run_parser_auto_proxy(self):
+        """Test auto proxy assignment when running parser."""
+        with patch("ayga_cli.mcp.server.AygaParserRedisClient") as MockRedis:
+            mock_client = AsyncMock()
+            mock_client.push.return_value = "test_queue"
+            MockRedis.return_value = mock_client
+
+            result = await _run_parser(
+                parser="FreeAI::Perplexity",
+                query="test",
+                async_mode=True,
+                options={"from_json": []},
+            )
+
+            assert result["success"] is True
+            # Find the push call options list
+            push_kwargs = mock_client.push.call_args.kwargs
+            options_passed = push_kwargs.get("options", [])
+            
+            # Since fast proxy uses 'USA_1IP_v4'
+            has_proxy_checker = any(opt.get("id") == "proxyChecker" for opt in options_passed)
+            assert has_proxy_checker
 
     @pytest.mark.asyncio
     async def test_run_parser_with_preset(self):

@@ -29,6 +29,7 @@ from ayga_cli.manifest import (
     Manifest,
     search_parsers,
 )
+from ayga_cli.proxy_strategy import merge_with_proxy
 
 # Initialize MCP server with enhanced instructions
 mcp = Server(
@@ -169,6 +170,7 @@ Returns: Validation result with errors, warnings, and transformed payload ready 
             name="run_parser",
             description="""
 Execute parser. For discovery, use search_parsers first.
+Proxy is automatically selected based on parser type.
 
 Args:
 - parser: Exact parser name (from search_parsers or get_parser_schema)
@@ -221,6 +223,16 @@ Returns:
                 },
             },
         ),
+        Tool(
+            name="get_proxy_status",
+            description="""
+Check current proxy pool status. Returns count of active proxies per checker.
+""",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+            },
+        ),
     ]
 
 
@@ -260,6 +272,10 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
             timeout=arguments.get("timeout", 300),
             options=arguments.get("options"),
         )
+        return [TextContent(type="text", text=str(result))]
+
+    elif name == "get_proxy_status":
+        result = await _get_proxy_status()
         return [TextContent(type="text", text=str(result))]
 
     else:
@@ -530,6 +546,11 @@ async def _run_parser(
             # Convert simple dict to options list format
             options_list = [{"id": k, "value": v} for k, v in options.items()]
 
+    if options_list is None:
+        options_list = []
+
+    options_list = merge_with_proxy(parser, options_list)
+
     if async_mode:
         # Async mode: Redis queue (non-blocking)
         client = AygaParserRedisClient(
@@ -589,6 +610,20 @@ async def _run_parser(
             }
         finally:
             await client.close()
+
+async def _get_proxy_status() -> dict:
+    """Check current proxy pool status."""
+    config = AygaParserConfig()
+    client = AygaParserHttpClient(config)
+    
+    try:
+        await client.connect()
+        result = await client.get_proxies()
+        return result
+    except Exception as e:
+        return {"status": "unavailable", "error": str(e)}
+    finally:
+        await client.close()
 
 
 # Run server entry point

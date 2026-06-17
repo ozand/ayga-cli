@@ -25,6 +25,7 @@ from ayga_cli.static_manifest import (
 )
 from ayga_cli.utils.dry_run import DryRunSimulator
 from ayga_cli.utils.pagination import execute_with_pagination
+from ayga_cli.proxy_strategy import merge_with_proxy
 
 app = typer.Typer(
     help="Execute ayga_parser requests",
@@ -278,6 +279,9 @@ def run(
 
     # Convert back to list format
     user_options = [{"id": k, "value": v} for k, v in merged_overrides.items()]
+
+    if transport in ('http', 'redis'):
+        user_options = merge_with_proxy(parser, user_options)
 
     # Validate required overrides
     is_valid, missing = validate_overrides(
