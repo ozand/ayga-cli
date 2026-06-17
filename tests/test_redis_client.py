@@ -52,6 +52,8 @@ class TestAygaParserRedisClient:
                 port=6379,
                 password=None,
                 decode_responses=True,
+                socket_timeout=360,
+                socket_connect_timeout=15,
             )
 
     @pytest.mark.asyncio

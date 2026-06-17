@@ -30,6 +30,7 @@ dependencies = [
     "redis>=5.0.0",
     "rich>=13.0.0",
     "keyring>=25.0.0",
+    "html2text>=2025.4.15",
 ]
 
 [project.optional-dependencies]

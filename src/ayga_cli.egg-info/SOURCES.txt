@@ -5,6 +5,7 @@ src/ayga_cli/config.py
 src/ayga_cli/main.py
 src/ayga_cli/manifest.py
 src/ayga_cli/presets.py
+src/ayga_cli/proxy_strategy.py
 src/ayga_cli/static_manifest.py
 src/ayga_cli.egg-info/PKG-INFO
 src/ayga_cli.egg-info/SOURCES.txt
@@ -34,4 +35,5 @@ tests/test_error_helper.py
 tests/test_http_client.py
 tests/test_manifest.py
 tests/test_presets.py
+tests/test_proxy_strategy.py
 tests/test_redis_client.py

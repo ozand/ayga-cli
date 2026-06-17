@@ -10,6 +10,7 @@ from ayga_cli.config import AygaParserConfig, get_config, get_config_dir, reload
 
 class TestAygaParserConfig:
     """Test suite for AygaParserConfig."""
+    import sys
 
     def test_default_values(self):
         """Test default configuration values."""
@@ -157,7 +158,13 @@ class TestAygaParserConfig:
         assert isinstance(config_dir, Path)
         assert config_dir.name == "ayga-cli"
         assert config_dir == get_config_dir()
-        assert config_dir.parent.name == "Roaming"
+        import sys
+        if sys.platform == "win32":
+            assert config_dir.parent.name == "Roaming"
+        elif sys.platform == "darwin":
+            assert config_dir.parent.name == "Application Support"
+        else:
+            assert config_dir.parent.name == ".config"
 
     def test_get_config_dir_windows(self, monkeypatch):
         """Test Windows config directory resolution."""

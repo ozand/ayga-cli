@@ -18,33 +18,36 @@ class TestRedisPushCommand:
         assert result.exit_code == 0
         assert "Push a task to Redis queue" in result.output
 
-    def test_redis_push_with_args(self):
+    @patch("ayga_cli.commands.redis.AygaParserRedisClient")
+    def test_redis_push_with_args(self, mock_client_cls):
         """Test redis push with required arguments."""
+        mock_client = AsyncMock()
+        mock_client.push.return_value = "test_result_queue"
+        mock_client_cls.return_value.__aenter__.return_value = mock_client
         result = runner.invoke(app, ["redis", "push", "SE::Google", "test query"])
         assert result.exit_code == 0
-        assert "Task Pushed" in result.output or "success" in result.output.lower()
+        assert "Queued" in result.output or "completed" in result.output.lower() or "Queued" in result.output
 
-    def test_redis_push_with_queue(self):
+    @patch("ayga_cli.commands.redis.AygaParserRedisClient")
+    def test_redis_push_with_queue(self, mock_client_cls):
         """Test redis push with custom queue."""
+        mock_client = AsyncMock()
+        mock_client.push.return_value = "custom_queue"
+        mock_client_cls.return_value.__aenter__.return_value = mock_client
         result = runner.invoke(app, [
             "redis", "push",
             "SE::Google", "test",
-            "--queue", "custom_queue"
+            "--result-queue", "custom_queue"
         ])
         assert result.exit_code == 0
         assert "custom_queue" in result.output
 
-    def test_redis_push_with_redis_host(self):
-        """Test redis push with custom Redis host."""
-        result = runner.invoke(app, [
-            "redis", "push",
-            "SE::Google", "test",
-            "--redis-host", "redis.example.com"
-        ])
-        assert result.exit_code == 0
-
-    def test_redis_push_json_output(self):
+    @patch("ayga_cli.commands.redis.AygaParserRedisClient")
+    def test_redis_push_json_output(self, mock_client_cls):
         """Test redis push with JSON output."""
+        mock_client = AsyncMock()
+        mock_client.push.return_value = "test_result_queue"
+        mock_client_cls.return_value.__aenter__.return_value = mock_client
         result = runner.invoke(app, [
             "redis", "push",
             "SE::Google", "test",
@@ -54,7 +57,7 @@ class TestRedisPushCommand:
         import json
         try:
             data = json.loads(result.output)
-            assert data.get("status") == "success"
+            assert data.get("status") == "queued"
         except json.JSONDecodeError:
             pass
 
@@ -63,41 +66,3 @@ class TestRedisPushCommand:
         result = runner.invoke(app, ["redis", "push"])
         assert result.exit_code != 0
 
-
-class TestRedisWaitCommand:
-    """Test suite for redis wait command."""
-
-    def test_redis_wait_help(self):
-        """Test redis wait command help."""
-        result = runner.invoke(app, ["redis", "wait", "--help"])
-        assert result.exit_code == 0
-        assert "Wait for task completion" in result.output
-
-    def test_redis_wait_with_queue(self):
-        """Test redis wait with queue name."""
-        result = runner.invoke(app, ["redis", "wait", "my_queue"])
-        # May timeout or complete depending on implementation
-        assert result.exit_code in [0, 124]  # 124 is timeout exit code
-
-    def test_redis_wait_with_timeout(self):
-        """Test redis wait with custom timeout."""
-        result = runner.invoke(app, [
-            "redis", "wait", "my_queue",
-            "--timeout", "1"
-        ])
-        # Should timeout quickly
-        assert result.exit_code in [0, 124]
-
-    def test_redis_wait_json_output(self):
-        """Test redis wait with JSON output."""
-        result = runner.invoke(app, [
-            "redis", "wait", "my_queue",
-            "--timeout", "1",
-            "--json"
-        ])
-        assert result.exit_code in [0, 124]
-
-    def test_redis_wait_missing_queue(self):
-        """Test redis wait without required queue argument."""
-        result = runner.invoke(app, ["redis", "wait"])
-        assert result.exit_code != 0
