@@ -1,6 +1,8 @@
-# ayga-parser CLI (GTV)
+# ayga-cli
 
-**Gateway to External Data** — Modern CLI and MCP server for ayga-parser integration.
+**Data access client** — fetch data from configured sources via Redis Wrapper. For AI agents and automation scripts.
+
+> **For AI Agents:** Read [CONTEXT.md](./CONTEXT.md) first — it contains Rules of Engagement, output format, exit codes, and usage examples optimised for LLM consumption.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
