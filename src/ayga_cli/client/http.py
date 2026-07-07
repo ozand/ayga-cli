@@ -1,6 +1,7 @@
 """HTTP API client for ayga_parser."""
 
 import json
+import uuid
 from typing import Any, Optional
 
 import httpx
@@ -856,6 +857,12 @@ class AygaParserHttpClient:
             raise AygaParserValidationError("Parser name is required")
         if not query:
             raise AygaParserValidationError("Query is required")
+
+        # The server echoes the task_id straight back and uses it as the
+        # result key, so the client must supply one. Generate a unique id when
+        # the caller didn't provide an explicit job id.
+        if not task_id:
+            task_id = f"ayga_{uuid.uuid4().hex[:16]}"
 
         body: dict[str, Any] = {
             "task_id": task_id,
