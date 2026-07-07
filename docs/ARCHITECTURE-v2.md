@@ -98,7 +98,7 @@ LPUSH ayga-parser_redis_api {request_json}
         ┌─────────────┼─────────────┐
         │             │             │
 ┌───────▼──────┐ ┌────▼─────┐ ┌────▼──────────┐
-│   Redis      │ │   HTTP   │ │   ayga-parser    │
+│   Redis      │ │   HTTP   │ │   Backend     │
 │   Queue      │ │   API    │ │   Instance(s) │
 │              │ │          │ │               │
 │ ayga-parser_     │ │:9091/API │ │  • 100 threads│
@@ -294,7 +294,7 @@ class ayga-parserConfig(BaseSettings):
                        ┌────────────────────────┘
                        │
                 ┌──────▼──────┐
-                │  ayga-parser   │
+                │  Backend    │
                 │  Password   │
                 │  (in-mem)   │
                 └──────┬──────┘

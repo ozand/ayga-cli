@@ -42,7 +42,7 @@ This report analyzes core architectural patterns for the ayga-parser CLI based o
 
 ## 5. Recommendations for ayga-parser CLI
 1. **Hybrid Architecture:** Implement an **MCP-compatible interface** within the CLI to allow it to be used as a backend for Claude/Copilot, while maintaining standalone CLI efficiency.
-2. **Dynamic Discovery:** Build the ayga-parser CLI commands dynamically based on the available parsers/presets on the specific ayga-parser instance.
+2. **Dynamic Discovery:** Build the ayga-parser CLI commands dynamically based on the available parsers/presets on the specific backend instance.
 3. **Lazy Loading:** Keep the agent's context window clean. Only load specific parser schemas when requested via a `search` or `help` command.
 
 ## 6. Actionable Insights for Implementation

@@ -6,7 +6,7 @@
 
 ## 1. High-Level Architecture
 
-The system acts as a middleware bridge connecting AI Agents (via MCP) and Human operators (via CLI) to the ayga-parser engine.
+The system acts as a middleware bridge connecting AI Agents (via MCP) and Human operators (via CLI) to the backend engine.
 It uses a Dual-Transport mechanism to ensure high throughput (Redis) with a reliable fallback (HTTP).
 
 ```mermaid
@@ -29,9 +29,9 @@ graph TD
     
     %% Integrations
     R_Client <-->|LPUSH / BLPOP| Redis[(Redis Queue)]
-    H_Client <-->|REST API| API[ayga-parser HTTP Endpoint]
+    H_Client <-->|REST API| API[Backend HTTP Endpoint]
     
-    Redis <-->|API::Server::Redis| Engine[ayga-parser Engine]
+    Redis <-->|API::Server::Redis| Engine[Backend Engine]
     API <--> Engine
 ```
 
@@ -57,8 +57,8 @@ graph TD
 3. MCP Server executes: `ayga-parser redis push SE::Google --queries-file ...`
 4. CLI pushes JSON payload to Redis `ayga-parser_redis_api`.
 5. CLI immediately returns a `queryId` to the AI agent.
-6. ayga-parser picks up the job from Redis, processes it using 100 threads.
-7. ayga-parser pushes results to `ayga-parser_results` queue.
+6. The backend picks up the job from Redis, processes it using 100 threads.
+7. The backend pushes results to `ayga-parser_results` queue.
 8. A separate Cron job or the AI Agent (via `ayga-parser task wait <queryId>`) pops the result.
 9. Data is cleaned and returned to the text context.
 

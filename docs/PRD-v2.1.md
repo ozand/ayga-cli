@@ -14,7 +14,7 @@
 ### 1.1 Problem Statement
 Current ayga-parser CLI v1.0 has critical architectural flaws:
 - **Hardcoded parsers:** Only 3 parsers known, missing 100+ including `FreeAI::Perplexity`
-- **Static commands:** CLI doesn't adapt to ayga-parser instance capabilities
+- **Static commands:** CLI doesn't adapt to backend instance capabilities
 - **No discovery:** Agents must know parser names in advance
 - **No caching:** Every call fetches fresh data from API
 - **Single-phase parsing:** Can't validate parser-specific arguments
@@ -23,7 +23,7 @@ Current ayga-parser CLI v1.0 has critical architectural flaws:
 **Dynamic Discovery Architecture** — CLI that:
 1. Discovers all available parsers at runtime via `getParsersList` + `getParserInfo`
 2. Caches manifest locally (24h TTL)
-3. Builds commands dynamically based on actual ayga-parser capabilities
+3. Builds commands dynamically based on actual backend capabilities
 4. Validates arguments using parser schemas (two-phase parsing)
 5. Supports fuzzy search for parser discovery
 
@@ -52,7 +52,7 @@ Current ayga-parser CLI v1.0 has critical architectural flaws:
 
 ### 2.2 Dynamic Command Building
 **As a** CLI user  
-**I want** commands to adapt to my ayga-parser instance  
+**I want** commands to adapt to my backend instance  
 **So that** I see only available parsers and their actual parameters
 
 **Acceptance Criteria:**
@@ -137,7 +137,7 @@ Phase 1: Identify parser
 Phase 2: Validate and execute
   Validate: --depth is int, within allowed range
   Transform: Build API payload
-  Execute: Send to ayga-parser via Redis/HTTP
+  Execute: Send to the backend via Redis/HTTP
 ```
 
 #### FR-005: Dynamic Help Generation
@@ -295,7 +295,7 @@ Behavior:
         ┌───────────────┼───────────────┐
         │               │               │
 ┌───────▼──────┐ ┌──────▼───────┐ ┌────▼──────────┐
-│   Manifest   │ │   ayga-parser   │ │   Redis       │
+│   Manifest   │ │   Backend    │ │   Redis       │
 │   Cache File │ │   HTTP API   │ │   Queue       │
 │   (JSON)     │ │   (getInfo)  │ │   (jobs)      │
 └──────────────┘ └──────────────┘ └───────────────┘
