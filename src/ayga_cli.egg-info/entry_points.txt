@@ -1,3 +1,0 @@
-[console_scripts]
-ayga_parser = ayga_cli.main:app
-ayga_parser-mcp = ayga_cli.mcp.server:main
