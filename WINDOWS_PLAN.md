@@ -15,7 +15,7 @@ ayga-cli/
 │   ├── config.py            # Pydantic settings
 │   ├── manifest.py          # Dynamic parser discovery
 │   ├── commands/            # CLI commands (run, test, etc.)
-│   ├── client/              # ayga-parser API client
+│   ├── client/              # Backend API client
 │   ├── mcp/                 # MCP server
 │   └── utils/               # Helpers
 ├── pyproject.toml           # Build config
