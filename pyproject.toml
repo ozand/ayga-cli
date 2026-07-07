@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ayga-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "ayga_parser CLI Tool with Redis and HTTP API support"
 readme = "README.md"
 license = {text = "MIT"}
@@ -24,6 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "typer>=0.12.0",
+    "click>=8.0.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "httpx>=0.27.0",
