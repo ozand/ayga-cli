@@ -34,8 +34,8 @@ ayga_parser get web-search "query" --stream
 ayga_parser sources info web-search
 
 # 5. Multi-step helpers
-ayga_parser +extract https://example.com/article   # URL -> Markdown
-ayga_parser +research "quantum computing"           # web-search + ai-answer combined
+ayga_parser +extract extract https://example.com/article   # URL -> Markdown
+ayga_parser +research research "quantum computing"          # web-search + ai-answer combined
 ```
 
 ## Exit Codes
