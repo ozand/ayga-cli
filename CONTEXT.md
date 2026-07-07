@@ -119,8 +119,8 @@ Output includes: description, returned fields with types, and usage examples.
 
 For multi-step operations, use `+verb` helpers:
 ```bash
-ayga_parser +extract <url>      # Fetch URL + convert to Markdown
-ayga_parser +research <query>   # Combine web-search + ai-answer
+ayga_parser +extract extract <url>      # Fetch URL + convert to Markdown
+ayga_parser +research research <query>  # Combine web-search + ai-answer
 ```
 
 **Rule:** Use a helper only when a single `get` call is insufficient. If one source call does the job, use `get` directly.
@@ -134,7 +134,7 @@ ayga_parser +research <query>   # Combine web-search + ai-answer
 ayga_parser get web-search "climate change 2025" --fields title,url,snippet
 
 # Get full article as Markdown
-ayga_parser +extract "https://example.com/article"
+ayga_parser +extract extract "https://example.com/article"
 
 # AI answer with timeout
 ayga_parser get ai-answer "What is quantum entanglement?" --timeout 120
