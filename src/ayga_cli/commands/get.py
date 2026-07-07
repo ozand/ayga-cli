@@ -22,6 +22,10 @@ app = typer.Typer(help="Fetch data from a source", no_args_is_help=True)
 console = Console()
 
 POLL_INTERVAL_SECONDS = 1.5
+# Backend returns HTTP 503 ("Redis pool is saturated" / "input queue backlog
+# is high") as normal soft backpressure when the queue is busy. The submit is
+# expected to be retried until it's accepted, within the caller's timeout.
+SUBMIT_RETRY_INTERVAL_SECONDS = 3.0
 
 
 def _build_epilog() -> str:
@@ -171,19 +175,27 @@ async def _execute_get(
         )
         raise typer.Exit(code=exit_codes.ERROR_NOT_FOUND)
 
+    # One shared budget for the whole submit+wait cycle. A busy queue rejects
+    # the submit with 503 (normal backpressure); we retry the submit until it's
+    # accepted, then poll for the result — all within `timeout`.
+    deadline = time.monotonic() + timeout
     try:
         async with AygaParserHttpClient(config=config) as client:
-            submission = await client.submit_task(
-                parser=aparser_name,
-                query=query,
-                task_id=job_id,
-            )
+            submission = await _submit_with_retry(client, aparser_name, query, job_id, deadline)
+            if submission is None:
+                print(
+                    f"Error: Server busy (queue backpressure) — submit not accepted "
+                    f"within {timeout}s",
+                    file=sys.stderr,
+                )
+                raise typer.Exit(code=exit_codes.ERROR_TIMEOUT)
+
             task_id = submission.get("task_id") or job_id
             if not task_id:
                 print("Error: Server did not return a task_id", file=sys.stderr)
                 raise typer.Exit(code=exit_codes.ERROR_GENERAL)
 
-            result = await _poll_for_result(client, task_id, timeout)
+            result = await _poll_for_result(client, task_id, deadline)
     except (ConnectionError, OSError, AygaParserHTTPError) as e:
         print(f"Error: Server unavailable — {e}", file=sys.stderr)
         raise typer.Exit(code=exit_codes.ERROR_UNAVAILABLE) from e
@@ -226,15 +238,44 @@ async def _execute_get(
     _print_results(result)
 
 
-async def _poll_for_result(
-    client: AygaParserHttpClient, task_id: str, timeout: int
+async def _submit_with_retry(
+    client: AygaParserHttpClient,
+    aparser_name: str,
+    query: str,
+    job_id: Optional[str],
+    deadline: float,
 ) -> Optional[dict]:
-    """Poll get_task_result until ready or timeout elapses.
+    """Submit a task, retrying on 503 backpressure until accepted or deadline.
+
+    A busy backend rejects submits with HTTP 503 ("Redis pool is saturated" /
+    "input queue backlog is high") — that's normal soft backpressure, not an
+    outage, so the correct client behavior is to keep trying to enqueue until
+    a slot frees up. Any non-503 error propagates immediately.
+
+    Returns the submission dict, or None if still rejected at the deadline.
+    """
+    while True:
+        try:
+            return await client.submit_task(parser=aparser_name, query=query, task_id=job_id)
+        except AygaParserHTTPError as e:
+            if getattr(e, "status_code", 0) != 503:
+                raise
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return None
+            await asyncio.sleep(min(SUBMIT_RETRY_INTERVAL_SECONDS, remaining))
+            if time.monotonic() >= deadline:
+                return None
+
+
+async def _poll_for_result(
+    client: AygaParserHttpClient, task_id: str, deadline: float
+) -> Optional[dict]:
+    """Poll get_task_result until ready or the deadline elapses.
 
     There is no server-side blocking-wait endpoint, so this polls on a
-    fixed interval until the result is available or the timeout is hit.
+    fixed interval until the result is available or the deadline is hit.
     """
-    deadline = time.monotonic() + timeout
     while True:
         result = await client.get_task_result(task_id)
         if result is not None:
