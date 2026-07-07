@@ -13,6 +13,7 @@ def mock_config():
     from pydantic import SecretStr
     config = MagicMock(spec=AygaParserConfig)
     config.http_url = "http://localhost:9091/API"
+    config.api_url = "https://redis.ayga.tech"
     config.redis_host = "localhost"
     config.redis_port = 6379
     config.redis_queue = "ayga_parser_redis_api"

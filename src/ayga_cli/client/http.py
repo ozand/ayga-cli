@@ -45,6 +45,9 @@ class AygaParserHttpClient:
         self.timeout = timeout or self.config.default_timeout
         self._client: Optional[httpx.AsyncClient] = None
         self._basic_auth = self._build_basic_auth()
+        # Second client for the Redis Wrapper REST API (different base URL,
+        # different auth scheme — X-API-Key header instead of JSON-body password).
+        self._api_client: Optional[httpx.AsyncClient] = None
 
     def _build_basic_auth(self) -> Optional[httpx.BasicAuth]:
         """Build HTTP Basic Auth configuration if credentials are available."""
@@ -75,18 +78,37 @@ class AygaParserHttpClient:
                 },
                 auth=self._basic_auth,
             )
+        if self._api_client is None:
+            self._api_client = httpx.AsyncClient(
+                base_url=self.config.api_url,
+                timeout=self.timeout,
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-API-Key": self.config.get_password() or "",
+                },
+            )
 
     async def close(self) -> None:
         """Close the HTTP client connection."""
         if self._client:
             await self._client.aclose()
             self._client = None
+        if self._api_client:
+            await self._api_client.aclose()
+            self._api_client = None
 
     def _ensure_connected(self) -> httpx.AsyncClient:
         """Ensure client is connected and return the client instance."""
         if self._client is None:
             raise AygaParserHTTPError("Client not connected. Use 'async with' or call connect()")
         return self._client
+
+    def _ensure_api_connected(self) -> httpx.AsyncClient:
+        """Ensure the Redis Wrapper REST API client is connected."""
+        if self._api_client is None:
+            raise AygaParserHTTPError("Client not connected. Use 'async with' or call connect()")
+        return self._api_client
 
     def _build_payload(self, action: str, data: Optional[dict] = None) -> dict:
         """Build the standard API request payload.
@@ -591,3 +613,315 @@ class AygaParserHttpClient:
         """
         result = await self._request("getProxies")
         return result.get("data", {})
+
+    # =================================================================
+    # Redis Wrapper REST API methods (https://redis.ayga.tech)
+    #
+    # This is a distinct public gateway from the ayga_parser native API
+    # above. Auth is via X-API-Key header (config.get_password()) rather
+    # than the JSON-body password scheme used by _request().
+    # =================================================================
+
+    async def _api_request(
+        self,
+        method: str,
+        path: str,
+        params: Optional[dict] = None,
+        json_body: Optional[dict] = None,
+        auth_required: bool = False,
+        allow_404: bool = False,
+        timeout: Optional[int] = None,
+    ) -> httpx.Response:
+        """Make a request against the Redis Wrapper REST API.
+
+        Args:
+            method: HTTP method ("GET" or "POST")
+            path: URL path (e.g. "/parsers")
+            params: Optional query parameters
+            json_body: Optional JSON request body
+            auth_required: If True, raise AygaParserAuthError when no API key
+                is configured, before making the request.
+            allow_404: If True, a 404 response is returned as-is instead of
+                raising (used by get_task_result, where 404 means "not ready").
+            timeout: Optional override for request timeout
+
+        Returns:
+            The raw httpx.Response with a 2xx status (or 404 if allow_404).
+
+        Raises:
+            AygaParserAuthError: If auth_required and no password/API key is set
+            AygaParserTimeoutError: If the request times out
+            AygaParserHTTPError: For other HTTP-level failures
+        """
+        if auth_required and not self.config.get_password():
+            raise AygaParserAuthError("ayga_parser API key not configured")
+
+        client = self._ensure_api_connected()
+        request_timeout = timeout or self.timeout
+
+        try:
+            response = await client.request(
+                method,
+                path,
+                params=params,
+                json=json_body,
+                timeout=request_timeout,
+            )
+            if allow_404 and response.status_code == 404:
+                return response
+            response.raise_for_status()
+        except httpx.TimeoutException as e:
+            raise AygaParserTimeoutError(
+                f"Request timeout after {request_timeout}s for '{path}'"
+            ) from e
+        except httpx.HTTPStatusError as e:
+            raise AygaParserHTTPError(
+                message=f"HTTP error: {e}",
+                status_code=e.response.status_code,
+                response_body=e.response.text,
+                action=path,
+            ) from e
+        except httpx.HTTPError as e:
+            raise AygaParserHTTPError(
+                message=f"HTTP request failed: {e}",
+                action=path,
+            ) from e
+
+        return response
+
+    def _parse_api_json(self, response: httpx.Response, action: str) -> dict:
+        """Parse a JSON body from an httpx.Response, raising on failure."""
+        try:
+            return response.json()
+        except json.JSONDecodeError as e:
+            raise AygaParserHTTPError(
+                message=f"Invalid JSON response: {e}",
+                status_code=response.status_code,
+                response_body=response.text,
+                action=action,
+            ) from e
+
+    async def list_parsers(
+        self,
+        category: Optional[str] = None,
+        enabled_only: Optional[bool] = None,
+        rollout_policy: Optional[str] = None,
+    ) -> dict:
+        """List available parsers from the Redis Wrapper registry.
+
+        Args:
+            category: Optional category filter
+            enabled_only: Optional filter to only enabled parsers
+            rollout_policy: Optional rollout policy filter
+
+        Returns:
+            Dict with "parsers" (list of parser metadata dicts) and "count"
+
+        Raises:
+            AygaParserHTTPError: If HTTP request fails
+        """
+        params: dict[str, Any] = {}
+        if category is not None:
+            params["category"] = category
+        if enabled_only is not None:
+            params["enabled_only"] = enabled_only
+        if rollout_policy is not None:
+            params["rollout_policy"] = rollout_policy
+
+        response = await self._api_request("GET", "/parsers", params=params or None)
+        return self._parse_api_json(response, "list_parsers")
+
+    async def get_parser(self, parser_id: str) -> dict:
+        """Get full details for a single parser by its registry id.
+
+        Args:
+            parser_id: Registry id (e.g. "perplexity", "google_search")
+
+        Returns:
+            Full parser details dict
+
+        Raises:
+            AygaParserValidationError: If parser_id is empty
+            AygaParserHTTPError: If HTTP request fails
+        """
+        if not parser_id:
+            raise AygaParserValidationError("Parser id is required")
+
+        response = await self._api_request("GET", f"/parsers/{parser_id}")
+        return self._parse_api_json(response, "get_parser")
+
+    async def get_parser_presets(self, parser_id: str) -> Any:
+        """Get available presets for a parser.
+
+        Args:
+            parser_id: Registry id (e.g. "perplexity")
+
+        Returns:
+            Parsed presets response
+
+        Raises:
+            AygaParserValidationError: If parser_id is empty
+            AygaParserHTTPError: If HTTP request fails
+        """
+        if not parser_id:
+            raise AygaParserValidationError("Parser id is required")
+
+        response = await self._api_request("GET", f"/parsers/{parser_id}/presets")
+        return self._parse_api_json(response, "get_parser_presets")
+
+    async def validate_parser(
+        self,
+        parser_id: str,
+        query: Optional[str] = None,
+        url: Optional[str] = None,
+        timeout: Optional[int] = None,
+        preset: Optional[str] = None,
+    ) -> dict:
+        """Validate a query/url/preset against a parser before submitting a task.
+
+        Args:
+            parser_id: Registry id (e.g. "perplexity")
+            query: Optional query string to validate
+            url: Optional URL to validate
+            timeout: Optional timeout value to validate
+            preset: Optional preset name to validate
+
+        Returns:
+            Dict with "is_valid" and "error"
+
+        Raises:
+            AygaParserValidationError: If parser_id is empty
+            AygaParserHTTPError: If HTTP request fails
+        """
+        if not parser_id:
+            raise AygaParserValidationError("Parser id is required")
+
+        params: dict[str, Any] = {}
+        if query is not None:
+            params["query"] = query
+        if url is not None:
+            params["url"] = url
+        if timeout is not None:
+            params["timeout"] = timeout
+        if preset is not None:
+            params["preset"] = preset
+
+        response = await self._api_request(
+            "GET", f"/parsers/{parser_id}/validate", params=params or None
+        )
+        return self._parse_api_json(response, "validate_parser")
+
+    async def list_categories(self) -> Any:
+        """List available parser categories.
+
+        Returns:
+            Parsed categories response
+
+        Raises:
+            AygaParserHTTPError: If HTTP request fails
+        """
+        response = await self._api_request("GET", "/parsers/categories/list")
+        return self._parse_api_json(response, "list_categories")
+
+    async def submit_task(
+        self,
+        parser: str,
+        query: str,
+        task_id: Optional[str] = None,
+        preset: Optional[str] = None,
+        options: Optional[dict] = None,
+        results: Optional[dict] = None,
+    ) -> dict:
+        """Submit a parsing task to the Redis Wrapper.
+
+        Args:
+            parser: The parser's aparser_name (e.g. "FreeAI::Perplexity"),
+                NOT the registry id.
+            query: Query string to parse
+            task_id: Optional client-supplied task id
+            preset: Optional preset name
+            options: Optional options dict
+            results: Optional results dict
+
+        Returns:
+            Dict with "task_id", "status", "parser", "submitted_at",
+            "queue_position"
+
+        Raises:
+            AygaParserValidationError: If parser or query is empty
+            AygaParserAuthError: If no API key is configured
+            AygaParserHTTPError: If HTTP request fails
+        """
+        if not parser:
+            raise AygaParserValidationError("Parser name is required")
+        if not query:
+            raise AygaParserValidationError("Query is required")
+
+        body: dict[str, Any] = {
+            "task_id": task_id,
+            "parser": parser,
+            "preset": preset,
+            "query": query,
+            "options": options,
+            "results": results,
+        }
+
+        response = await self._api_request(
+            "POST", "/parsers/tasks", json_body=body, auth_required=True
+        )
+        return self._parse_api_json(response, "submit_task")
+
+    async def get_task_status(self, task_id: str) -> dict:
+        """Check whether a submitted task is ready.
+
+        Args:
+            task_id: Task identifier returned by submit_task
+
+        Returns:
+            Dict with "task_id", "ready" (bool), "checked_at"
+
+        Raises:
+            AygaParserValidationError: If task_id is empty
+            AygaParserAuthError: If no API key is configured
+            AygaParserHTTPError: If HTTP request fails
+        """
+        if not task_id:
+            raise AygaParserValidationError("Task ID is required")
+
+        response = await self._api_request(
+            "GET", f"/parsers/tasks/{task_id}/status", auth_required=True
+        )
+        return self._parse_api_json(response, "get_task_status")
+
+    async def get_task_result(
+        self, task_id: str, format_type: str = "parsed"
+    ) -> Optional[dict]:
+        """Fetch the result of a completed task.
+
+        Args:
+            task_id: Task identifier returned by submit_task
+            format_type: "raw" or "parsed"
+
+        Returns:
+            Dict with "task_id", "status", "data", "format",
+            "wait_time_seconds", "parser" — or None if the result is not
+            ready yet (server returns HTTP 404 in that case).
+
+        Raises:
+            AygaParserValidationError: If task_id is empty
+            AygaParserAuthError: If no API key is configured
+            AygaParserHTTPError: If HTTP request fails (non-404 errors)
+        """
+        if not task_id:
+            raise AygaParserValidationError("Task ID is required")
+
+        response = await self._api_request(
+            "GET",
+            f"/parsers/results/{task_id}",
+            params={"format": format_type},
+            auth_required=True,
+            allow_404=True,
+        )
+        if response.status_code == 404:
+            return None
+        return self._parse_api_json(response, "get_task_result")

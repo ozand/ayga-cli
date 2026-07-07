@@ -79,6 +79,7 @@ class AygaParserConfig(BaseSettings):
 
     Attributes:
         http_url: ayga_parser HTTP API endpoint.
+        api_url: Redis Wrapper public REST API base URL (get/sources commands).
         redis_host: Redis server hostname.
         redis_port: Redis server port.
         redis_queue: Primary Redis queue name for ayga_parser requests.
@@ -104,6 +105,14 @@ class AygaParserConfig(BaseSettings):
     http_url: str = Field(
         default="http://127.0.0.1:9091/API",
         description="ayga_parser HTTP API endpoint URL",
+    )
+    api_url: str = Field(
+        default="https://redis.ayga.tech",
+        description=(
+            "Redis Wrapper public REST API base URL (used by 'get'/'sources' "
+            "commands). Distinct from http_url, which targets A-Parser's own "
+            "native API."
+        ),
     )
     http_basic_username: str = Field(
         default="",
@@ -198,6 +207,14 @@ class AygaParserConfig(BaseSettings):
         """Validate HTTP URL format."""
         if not v.startswith(("http://", "https://")):
             raise ValueError("HTTP URL must start with http:// or https://")
+        return v.rstrip("/")
+
+    @field_validator("api_url")
+    @classmethod
+    def validate_api_url(cls, v: str) -> str:
+        """Validate Redis Wrapper API URL format."""
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("API URL must start with http:// or https://")
         return v.rstrip("/")
 
     def get_password(self) -> Optional[str]:
