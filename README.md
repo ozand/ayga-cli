@@ -14,11 +14,11 @@ You ask for data by **source name** and **query** — the server handles parsers
 ## Features
 
 - **Source-based interface**: `get <source> <query>` — no backend/parser knowledge required
-- **Redis transport**: async queue-based communication with the backend server
+- **REST transport**: talks to the public Redis Wrapper API (`https://redis.ayga.tech`) over HTTPS
 - **MCP server**: 2-tool MCP server (`fetch_data`, `list_sources`) for AI agent integration
 - **Modern CLI**: Typer + Rich for readable output, `--json`/`--stream` for machine consumption
 - **Secure**: OS keyring for password storage
-- **Tested**: 195 passing tests (5 skipped)
+- **Tested**: 215 passing tests (5 skipped)
 
 ## Installation
 
@@ -38,15 +38,17 @@ The `[mcp]` extra is only needed if you plan to run the MCP server (`ayga_parser
 
 ## Configuration
 
+For the primary `get`/`sources` workflow, **all you need is your API key**:
+
 ```bash
 # Interactive setup
 ayga_parser config init
 
 # Or set via environment variables (AYGA_ prefix, case-insensitive)
-export AYGA_HTTP_URL="http://127.0.0.1:9091/API"
-export AYGA_REDIS_HOST="127.0.0.1"
-export AYGA_REDIS_PORT="6379"
-export AYGA_PASSWORD="your_password"
+export AYGA_PASSWORD="your_api_key"
+
+# Optional: only needed if self-hosting a different Redis Wrapper instance
+export AYGA_API_URL="https://redis.ayga.tech"
 ```
 
 - Config files, presets, and manifest cache share one canonical config directory:
@@ -54,8 +56,22 @@ export AYGA_PASSWORD="your_password"
   - macOS: `~/Library/Application Support/ayga-cli`
   - Linux: `~/.config/ayga-cli`
 - Settings can also be dropped into a `.env` file inside that config directory — it's loaded automatically.
-- HTTP requests can use both the API password payload and HTTP Basic Auth. Set `AYGA_HTTP_BASIC_USERNAME` and optionally `AYGA_HTTP_BASIC_PASSWORD` if your backend requires explicit Basic Auth credentials.
 - View the resolved configuration at any time with `ayga_parser config show`.
+
+### Other transports (not needed for `get`/`sources`)
+
+The variables below configure two separate, lower-level transports used by other command groups — they are **not required** for `get`/`sources` to work:
+
+```bash
+# A-Parser's own native HTTP API (used by 'parsers'/'presets'/'ping'/'test' — see below)
+export AYGA_HTTP_URL="http://127.0.0.1:9091/API"
+export AYGA_HTTP_BASIC_USERNAME="..."   # optional HTTP Basic Auth
+export AYGA_HTTP_BASIC_PASSWORD="..."   # optional, defaults to AYGA_PASSWORD
+
+# Raw Redis queue access (used by 'redis push'/'redis pop' — low-level, operator-facing)
+export AYGA_REDIS_HOST="127.0.0.1"
+export AYGA_REDIS_PORT="6379"
+```
 
 ## CLI Usage
 
@@ -68,25 +84,25 @@ This is the primary, backend-agnostic interface. Discover what's available, then
 ayga_parser sources list
 
 # 2. Inspect a source's schema (fields, description, examples) before using it
-ayga_parser sources info web-search
+ayga_parser sources info google_search
 
 # 3. Fetch data
-ayga_parser get web-search "machine learning 2025"
+ayga_parser get google_search "machine learning 2025"
 
 # 4. Limit the response to specific fields (recommended for agent contexts)
-ayga_parser get web-search "machine learning 2025" --fields title,url,snippet
+ayga_parser get google_search "machine learning 2025" --fields title,url,snippet
 
 # 5. Stream results as NDJSON — one record per line
-ayga_parser get web-search "Python tutorials" --stream --fields title,url
+ayga_parser get google_search "Python tutorials" --stream --fields title,url
 
 # 6. Get structured JSON output
-ayga_parser get ai-answer "What is quantum computing?" --json
+ayga_parser get perplexity "What is quantum computing?" --json
 
 # 7. Preview what would be sent, without executing
-ayga_parser get web-search "test" --dry-run
+ayga_parser get google_search "test" --dry-run
 
 # 8. Custom timeout (default: 300s)
-ayga_parser get ai-answer "explain entropy" --timeout 120
+ayga_parser get perplexity "explain entropy" --timeout 120
 ```
 
 `sources list` and `sources info` cache results locally; pass `--no-cache` to force a fresh fetch from the server.
@@ -96,10 +112,10 @@ ayga_parser get ai-answer "explain entropy" --timeout 120
 For multi-step operations that combine more than one source call. Each `+verb` is a command group with a single subcommand of the same name:
 
 ```bash
-# Fetch a URL and return clean Markdown (uses the 'article' source internally)
+# Fetch a URL and return clean Markdown (uses the 'article_extractor' source internally)
 ayga_parser +extract extract https://example.com/article
 
-# Combine web-search + ai-answer for a topic
+# Combine google_search + perplexity for a topic
 ayga_parser +research research "quantum computing"
 ```
 
@@ -168,7 +184,7 @@ python -m ayga_cli.mcp.server
 sources = await mcp.list_sources()
 
 # Fetch data from a source
-result = await mcp.fetch_data(source="web-search", query="machine learning 2025")
+result = await mcp.fetch_data(source="google_search", query="machine learning 2025")
 # Returns: {"success": true, "status": "completed", "result": {...}}
 ```
 
@@ -185,17 +201,18 @@ result = await mcp.fetch_data(source="web-search", query="machine learning 2025"
             ┌───────▼────────┐
             │   ayga-cli      │
             │  ├─ get/sources │
-            │  ├─ Redis Client│
+            │  ├─ HTTP Client │
             │  └─ MCP Server  │
             └───────┬─────────┘
                     │
             ┌───────▼────────┐
             │  Redis Wrapper │
+            │  REST API      │
             │   (backend)    │
             └────────────────┘
 ```
 
-`ayga-cli` only talks to the Redis Wrapper server. What the server does internally (parsers, proxies, presets) is its own concern — not something callers of `get`/`sources` need to know.
+`ayga-cli` talks to the Redis Wrapper server's public REST API (`https://redis.ayga.tech`) over HTTPS. What the server does internally (parsers, proxies, presets) is its own concern — not something callers of `get`/`sources` need to know.
 
 ## Testing
 
@@ -210,7 +227,7 @@ pytest tests/ --cov=ayga_cli --cov-report=html
 pytest tests/test_commands/test_get.py -v
 ```
 
-Current status: **195 passed, 5 skipped**.
+Current status: **215 passed, 5 skipped**.
 
 ## License
 

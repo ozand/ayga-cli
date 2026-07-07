@@ -14,7 +14,7 @@ Always run `ayga_parser sources list` before your first `get` call to see what s
 **2. Protect your context window**
 Use `--fields` to limit response size. Sources can return large payloads (full articles, many search results). Request only what you need:
 ```
-ayga_parser get web-search "query" --fields title,url,snippet
+ayga_parser get google_search "query" --fields title,url,snippet
 ```
 
 **3. Handle exit codes explicitly**
@@ -66,7 +66,7 @@ Successful responses (`exit 0`) are JSON objects in stdout:
 
 ```json
 {
-  "source": "web-search",
+  "source": "google_search",
   "query": "machine learning",
   "results": [
     {"title": "...", "url": "...", "snippet": "..."},
@@ -108,7 +108,7 @@ Error details are always in **stderr**, not stdout. Stdout is reserved for clean
 
 Before calling a source, inspect its schema:
 ```bash
-ayga_parser sources info web-search
+ayga_parser sources info google_search
 ```
 
 Output includes: description, returned fields with types, and usage examples.
@@ -120,7 +120,7 @@ Output includes: description, returned fields with types, and usage examples.
 For multi-step operations, use `+verb` helpers:
 ```bash
 ayga_parser +extract extract <url>      # Fetch URL + convert to Markdown
-ayga_parser +research research <query>  # Combine web-search + ai-answer
+ayga_parser +research research <query>  # Combine google_search + perplexity
 ```
 
 **Rule:** Use a helper only when a single `get` call is insufficient. If one source call does the job, use `get` directly.
@@ -131,17 +131,17 @@ ayga_parser +research research <query>  # Combine web-search + ai-answer
 
 ```bash
 # Web search
-ayga_parser get web-search "climate change 2025" --fields title,url,snippet
+ayga_parser get google_search "climate change 2025" --fields title,url,snippet
 
 # Get full article as Markdown
 ayga_parser +extract extract "https://example.com/article"
 
 # AI answer with timeout
-ayga_parser get ai-answer "What is quantum entanglement?" --timeout 120
+ayga_parser get perplexity "What is quantum entanglement?" --timeout 120
 
 # Stream search results (NDJSON)
-ayga_parser get web-search "Python tutorials" --stream --fields title,url
+ayga_parser get google_search "Python tutorials" --stream --fields title,url
 
 # Debug: see what would be sent
-ayga_parser get web-search "test" --dry-run
+ayga_parser get google_search "test" --dry-run
 ```

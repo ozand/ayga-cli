@@ -3,6 +3,8 @@
 import asyncio
 import json
 import sys
+import time
+import uuid
 from typing import Optional
 
 import typer
@@ -10,14 +12,16 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from ayga_cli.client.redis import AygaParserRedisClient
+from ayga_cli.client.http import AygaParserHttpClient
 from ayga_cli.config import get_config
-from ayga_cli.exceptions import exit_codes
+from ayga_cli.exceptions import AygaParserHTTPError, exit_codes
 from ayga_cli.utils.fields import filter_fields
-from ayga_cli.utils.sources_cache import load_cache
+from ayga_cli.utils.sources_cache import load_cache, save_cache
 
 app = typer.Typer(help="Fetch data from a source", no_args_is_help=True)
 console = Console()
+
+POLL_INTERVAL_SECONDS = 1.5
 
 
 def _build_epilog() -> str:
@@ -26,7 +30,7 @@ def _build_epilog() -> str:
         return "Use 'ayga_parser sources list' to see available sources."
     lines = ["Available sources (cached):"]
     for s in cached:
-        lines.append(f"  {s['name']:<20} {s.get('description', '')}")
+        lines.append(f"  {s.get('id', s.get('name', '?')):<20} {s.get('description', '')}")
     return "\n".join(lines)
 
 
@@ -48,7 +52,7 @@ def _extract_list(result: dict) -> list:
 
 @app.command(name="get", epilog=_build_epilog())
 def get_cmd(
-    source: str = typer.Argument(..., help="Data source name (e.g., web-search)"),
+    source: str = typer.Argument(..., help="Data source name (e.g., perplexity)"),
     query: str = typer.Argument(..., help="Query string to fetch"),
     format_json: bool = typer.Option(False, "--json", "-j", help="Output as JSON"),
     stream: bool = typer.Option(
@@ -64,16 +68,16 @@ def get_cmd(
         help="Show what would be sent to the server without executing.",
     ),
     timeout: int = typer.Option(300, "--timeout", help="Request timeout in seconds"),
-    job_id: Optional[str] = typer.Option(None, "--job-id", help="Optional specific job ID"),
+    job_id: Optional[str] = typer.Option(None, "--job-id", help="Optional specific task ID"),
 ):
     """Fetch data from a source.
 
     Examples:
-        ayga_parser get web-search "machine learning"
-        ayga_parser get web-search "ML" --fields title,url,snippet
-        ayga_parser get web-search "ML" --stream
-        ayga_parser get web-search "ML" --dry-run
-        ayga_parser get ai-answer "What is quantum computing?" --timeout 120
+        ayga_parser get perplexity "machine learning"
+        ayga_parser get perplexity "ML" --fields answer,sources
+        ayga_parser get google_search "ML" --stream
+        ayga_parser get google_search "ML" --dry-run
+        ayga_parser get perplexity "What is quantum computing?" --timeout 120
     """
     if not source or not source.strip():
         print("Error: Invalid input (empty source)", file=sys.stderr)
@@ -83,6 +87,34 @@ def get_cmd(
         raise typer.Exit(code=exit_codes.ERROR_INPUT)
 
     asyncio.run(_execute_get(source, query, format_json, stream, fields, dry_run, timeout, job_id))
+
+
+async def _resolve_aparser_name(config, source: str) -> Optional[str]:
+    """Resolve a user-facing source id to its backend aparser_name.
+
+    Uses the local sources cache first; on a cache miss (or if the source
+    isn't found in the cache), fetches a fresh list from the server before
+    giving up.
+    """
+    cached = load_cache()
+    sources = cached or []
+
+    match = next((s for s in sources if s.get("id") == source or s.get("name") == source), None)
+    if match is not None:
+        return match.get("aparser_name")
+
+    # Cache miss — fetch fresh and try again
+    async with AygaParserHttpClient(config=config) as client:
+        response = await client.list_parsers()
+    parsers = response.get("parsers", []) if isinstance(response, dict) else []
+    if parsers:
+        save_cache(parsers)
+
+    match = next((s for s in parsers if s.get("id") == source or s.get("name") == source), None)
+    if match is not None:
+        return match.get("aparser_name")
+
+    return None
 
 
 async def _execute_get(
@@ -96,47 +128,65 @@ async def _execute_get(
     job_id: Optional[str],
 ) -> None:
     config = get_config()
-    redis_password = config.redis_password.get_secret_value() if config.redis_password else None
-    password = config.password.get_secret_value() if config.password else None
 
     # --dry-run: show payload without executing
     if dry_run:
-        import uuid
         preview_id = job_id or f"ayga_{source}_{uuid.uuid4().hex[:8]}"
-        result_queue = f"ayga_results_{preview_id}"
-        payload = [preview_id, source, query, {}, {"output_queue": result_queue}, {}]
+        payload = {
+            "task_id": preview_id,
+            "parser": f"<aparser_name for '{source}'>",
+            "preset": None,
+            "query": query,
+            "options": None,
+            "results": None,
+        }
         dry_info = {
             "dry_run": True,
-            "queue": config.redis_queue,
+            "url": f"{config.api_url}/parsers/tasks",
             "payload": payload,
-            "result_queue": result_queue,
+            "result_queue": preview_id,
             "timeout": timeout,
         }
         if format_json:
             print(json.dumps(dry_info, indent=2, ensure_ascii=False))
         else:
-            console.print("[bold yellow]DRY RUN[/bold yellow] — would send to Redis Wrapper:")
-            console.print(f"  Queue:        [cyan]{config.redis_queue}[/cyan]")
+            console.print("[bold yellow]DRY RUN[/bold yellow] — would POST to Redis Wrapper:")
+            console.print(f"  URL:          [cyan]{dry_info['url']}[/cyan]")
             console.print(f"  Payload:      [dim]{json.dumps(payload, ensure_ascii=False)}[/dim]")
-            console.print(f"  Result queue: [cyan]{result_queue}[/cyan]")
             console.print(f"  Timeout:      {timeout}s")
             console.print("\n[dim]No data was fetched. Remove --dry-run to execute.[/dim]")
         return
 
     try:
-        async with AygaParserRedisClient(
-            redis_host=config.redis_host,
-            redis_port=config.redis_port,
-            redis_queue=config.redis_queue,
-            redis_password=redis_password,
-            password=password,
-        ) as client:
-            actual_job_id = await client.push(source=source, query=query, job_id=job_id)
-            result_queue = f"ayga_results_{actual_job_id}"
-            result = await client.pop(result_queue=result_queue, timeout=timeout)
-    except (ConnectionError, OSError) as e:
+        aparser_name = await _resolve_aparser_name(config, source)
+    except AygaParserHTTPError as e:
         print(f"Error: Server unavailable — {e}", file=sys.stderr)
-        raise typer.Exit(code=exit_codes.ERROR_UNAVAILABLE)
+        raise typer.Exit(code=exit_codes.ERROR_UNAVAILABLE) from e
+
+    if aparser_name is None:
+        print(
+            f"Error: Source '{source}' not found. Run 'ayga_parser sources list' to see "
+            "available sources.",
+            file=sys.stderr,
+        )
+        raise typer.Exit(code=exit_codes.ERROR_NOT_FOUND)
+
+    try:
+        async with AygaParserHttpClient(config=config) as client:
+            submission = await client.submit_task(
+                parser=aparser_name,
+                query=query,
+                task_id=job_id,
+            )
+            task_id = submission.get("task_id") or job_id
+            if not task_id:
+                print("Error: Server did not return a task_id", file=sys.stderr)
+                raise typer.Exit(code=exit_codes.ERROR_GENERAL)
+
+            result = await _poll_for_result(client, task_id, timeout)
+    except (ConnectionError, OSError, AygaParserHTTPError) as e:
+        print(f"Error: Server unavailable — {e}", file=sys.stderr)
+        raise typer.Exit(code=exit_codes.ERROR_UNAVAILABLE) from e
 
     if result is None:
         print(f"Error: No response from server (timeout {timeout}s)", file=sys.stderr)
@@ -144,7 +194,12 @@ async def _execute_get(
 
     # --stream: NDJSON — extract list first, then apply --fields per item
     if stream:
-        items = _extract_list(result) if isinstance(result, dict) else (result if isinstance(result, list) else [result])
+        if isinstance(result, dict):
+            items = _extract_list(result)
+        elif isinstance(result, list):
+            items = result
+        else:
+            items = [result]
         if not items:
             items = [result]
         for item in items:
@@ -156,7 +211,8 @@ async def _execute_get(
     if fields:
         items = _extract_list(result) if isinstance(result, dict) else None
         if items:
-            result = {**result, **{k: v for k, v in result.items() if k not in ("results", "result", "items", "data")}}
+            excluded_keys = ("results", "result", "items", "data")
+            result = {**result, **{k: v for k, v in result.items() if k not in excluded_keys}}
             result = filter_fields({"results": [filter_fields(i, fields) for i in items]}, None)
         else:
             result = filter_fields(result, fields)
@@ -168,6 +224,29 @@ async def _execute_get(
 
     # Human-readable
     _print_results(result)
+
+
+async def _poll_for_result(
+    client: AygaParserHttpClient, task_id: str, timeout: int
+) -> Optional[dict]:
+    """Poll get_task_result until ready or timeout elapses.
+
+    There is no server-side blocking-wait endpoint, so this polls on a
+    fixed interval until the result is available or the timeout is hit.
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        result = await client.get_task_result(task_id)
+        if result is not None:
+            return result
+
+        if time.monotonic() >= deadline:
+            return None
+
+        remaining = deadline - time.monotonic()
+        await asyncio.sleep(min(POLL_INTERVAL_SECONDS, max(remaining, 0)))
+        if time.monotonic() >= deadline:
+            return None
 
 
 def _print_results(result) -> None:
@@ -185,7 +264,7 @@ def _print_results(result) -> None:
         ))
         table = Table(title="Results")
         if isinstance(items[0], dict):
-            for key in items[0].keys():
+            for key in items[0]:
                 table.add_column(str(key))
             for item in items[:20]:
                 table.add_row(*[str(v)[:120] for v in item.values()])

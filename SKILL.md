@@ -25,17 +25,17 @@ Fetch data from configured sources. The server (Redis Wrapper) handles all infra
 ayga_parser sources list
 
 # 2. Fetch data (use --fields to protect context window)
-ayga_parser get web-search "machine learning 2025" --fields title,url,snippet
+ayga_parser get google_search "machine learning 2025" --fields title,url,snippet
 
 # 3. Stream results as NDJSON (one record per line)
-ayga_parser get web-search "query" --stream
+ayga_parser get google_search "query" --stream
 
 # 4. Get schema for a source before using it
-ayga_parser sources info web-search
+ayga_parser sources info google_search
 
 # 5. Multi-step helpers
 ayga_parser +extract extract https://example.com/article   # URL -> Markdown
-ayga_parser +research research "quantum computing"          # web-search + ai-answer combined
+ayga_parser +research research "quantum computing"          # google_search + perplexity combined
 ```
 
 ## Exit Codes
@@ -79,6 +79,6 @@ With `--stream`:
 - Use `--fields` in agent contexts to avoid large payloads overwhelming context window
 - Exit code `4` means Redis Wrapper is down — do NOT retry in a tight loop
 - `+research` sends two parallel jobs; if one times out, partial results are returned (no crash)
-- Source names are lowercase with hyphens: `web-search`, not `WebSearch` or `web_search`
+- Source names are the registry `id` — lowercase with underscores, e.g. `google_search`, `perplexity`, `article_extractor`
 - `--stream` and `--json` can be combined with `--fields` for efficient pipelined output
 - Use `sources info <name>` before calling an unfamiliar source to understand its response schema
