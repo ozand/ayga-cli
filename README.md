@@ -32,6 +32,10 @@ pip install -e ".[mcp]"
 
 The `[mcp]` extra is only needed if you plan to run the MCP server (`ayga_parser-mcp`).
 
+## Authentication
+
+`ayga-cli` talks to a hosted backend — you need an API key (`AYGA_PASSWORD`) to use it. Get your API key from https://redis.ayga.tech or contact support@ayga.tech.
+
 ## Configuration
 
 ```bash
