@@ -108,3 +108,67 @@ def test_get_command_source_not_found(mock_client_class):
     from ayga_cli.exceptions import exit_codes
 
     assert result.exit_code == exit_codes.ERROR_NOT_FOUND
+
+
+@patch("ayga_cli.commands.get.asyncio.sleep", new_callable=AsyncMock)
+@patch("ayga_cli.commands.get.AygaParserHttpClient")
+def test_get_command_retries_submit_on_503(mock_client_class, _mock_sleep):
+    """A busy backend rejects the first submit with 503; get should retry and succeed."""
+    from ayga_cli.exceptions import AygaParserHTTPError
+
+    inst = _make_client(
+        result_return={
+            "task_id": "task_123",
+            "status": "completed",
+            "data": {"results": [{"title": "Test 1", "url": "http://test1.com"}]},
+            "format": "parsed",
+        }
+    )
+    inst.submit_task.side_effect = [
+        AygaParserHTTPError(message="busy", status_code=503),
+        {
+            "task_id": "task_123",
+            "status": "submitted",
+            "parser": "FreeAI::Perplexity",
+            "submitted_at": "2026-01-01T00:00:00Z",
+            "queue_position": 1,
+        },
+    ]
+    mock_client_class.return_value.__aenter__.return_value = inst
+
+    result = runner.invoke(app, ["get", "perplexity", "test query", "--timeout", "30"])
+
+    assert result.exit_code == 0
+    assert "Success" in result.stdout
+    assert inst.submit_task.call_count == 2  # first 503, then accepted
+
+
+@patch("ayga_cli.commands.get.asyncio.sleep", new_callable=AsyncMock)
+@patch("ayga_cli.commands.get.AygaParserHttpClient")
+def test_get_command_persistent_503_times_out(mock_client_class, _mock_sleep):
+    """Submit rejected with 503 for the whole budget -> ERROR_TIMEOUT, not a crash."""
+    from ayga_cli.exceptions import AygaParserHTTPError, exit_codes
+
+    inst = _make_client()
+    inst.submit_task.side_effect = AygaParserHTTPError(message="busy", status_code=503)
+    mock_client_class.return_value.__aenter__.return_value = inst
+
+    result = runner.invoke(app, ["get", "perplexity", "test query", "--timeout", "1"])
+
+    assert result.exit_code == exit_codes.ERROR_TIMEOUT
+    assert inst.get_task_result.call_count == 0  # never got past submit
+
+
+@patch("ayga_cli.commands.get.AygaParserHttpClient")
+def test_get_command_non_503_error_fails_fast(mock_client_class):
+    """A non-503 HTTP error must propagate immediately, not retry."""
+    from ayga_cli.exceptions import AygaParserHTTPError, exit_codes
+
+    inst = _make_client()
+    inst.submit_task.side_effect = AygaParserHTTPError(message="boom", status_code=500)
+    mock_client_class.return_value.__aenter__.return_value = inst
+
+    result = runner.invoke(app, ["get", "perplexity", "test query", "--timeout", "30"])
+
+    assert result.exit_code == exit_codes.ERROR_UNAVAILABLE
+    assert inst.submit_task.call_count == 1  # no retry on non-503

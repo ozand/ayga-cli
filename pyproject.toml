@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ayga-cli"
-version = "0.1.2"
+version = "0.1.3"
 description = "ayga_parser CLI Tool with Redis and HTTP API support"
 readme = "README.md"
 license = {text = "MIT"}
