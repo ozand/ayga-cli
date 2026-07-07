@@ -72,7 +72,7 @@ class AygaParserConfig(BaseSettings):
     """ayga_parser CLI configuration.
 
     Configuration sources (in order of priority):
-    1. Environment variables (ayga_parser_* prefix)
+    1. Environment variables (ayga_* prefix)
     2. Config file (~/.config/ayga-cli/config.yaml or .env)
     3. OS Keyring (for password)
     4. Default values
@@ -94,7 +94,7 @@ class AygaParserConfig(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="ayga_parser_",
+        env_prefix="ayga_",
         env_file_encoding="utf-8",
         secrets_dir="/run/secrets",  # Linux-specific, Windows/macOS use env vars
         extra="ignore",
@@ -204,7 +204,7 @@ class AygaParserConfig(BaseSettings):
         """Get ayga_parser password from config or keyring.
 
         Priority:
-        1. Environment variable (ayga_parser_PASSWORD)
+        1. Environment variable (AYGA_PASSWORD)
         2. Config file password field
         3. OS Keyring (service: 'ayga-cli', username: 'api')
 

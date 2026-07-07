@@ -34,10 +34,10 @@ def mock_config():
 
 
 @pytest.fixture(autouse=True)
-def clear_ayga_parser_env(monkeypatch):
-    """Clear ayga_parser environment variables for test isolation."""
+def clear_ayga_env(monkeypatch):
+    """Clear ayga environment variables for test isolation."""
     for key in list(__import__("os").environ):
-        if key.startswith("ayga_parser_"):
+        if key.lower().startswith("ayga_"):
             monkeypatch.delenv(key, raising=False)
 
 
