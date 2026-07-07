@@ -1,6 +1,6 @@
-# ayga-parser CLI — Установка на Windows
+# ayga-cli — Установка на Windows
 
-**Версия:** 2.3  
+**Версия:** 2.3
 **Статус:** Private (требует доступа к репозиторию)
 
 ---
@@ -16,24 +16,24 @@ $rawUrl = "https://raw.githubusercontent.com/ozand/ayga-cli/main/scripts/install
 
 # Скачать с авторизацией (для приватного репо)
 $headers = @{ Authorization = "token $githubToken" }
-Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install-ayga-parser.ps1"
+Invoke-RestMethod -Uri $rawUrl -Headers $headers -OutFile "$env:TEMP\install-ayga-cli.ps1"
 ```
 
 ### Шаг 2: Запустить установку
 
 ```powershell
 # Запустить скрипт установки
-& "$env:TEMP\install-ayga-parser.ps1" -ayga-parserUrl "http://your-ayga-parser-host:8080" -ayga-parserPassword "123"
+& "$env:TEMP\install-ayga-cli.ps1" -BackendUrl "http://127.0.0.1:9091/API" -BackendPassword "123"
 ```
 
 ### Шаг 3: Проверить установку
 
 ```powershell
 # Проверить версию
-ayga-parser --version
+ayga_parser --version
 
 # Проверить статус
-ayga-parser status
+ayga_parser status
 ```
 
 ---
@@ -59,7 +59,7 @@ $githubToken = "ghp_YOUR_TOKEN"
 pip install "git+https://$githubToken@github.com/ozand/ayga-cli.git@main"
 
 # 3. Инициализировать конфигурацию
-ayga-parser init
+ayga_parser init
 
 # 4. Настроить
 notepad $env:APPDATA\ayga-cli\.env
@@ -81,7 +81,7 @@ python -m venv .venv
 pip install -e .
 
 # 4. Проверить
-ayga-parser --version
+ayga_parser --version
 ```
 
 ### Вариант C: Standalone EXE (без Python)
@@ -107,24 +107,24 @@ ayga-parser --version
 После установки создать `%APPDATA%\ayga-cli\.env`:
 
 ```env
-# ayga-parser API
-ayga-parser_URL=http://your-ayga-parser-host:8080
-ayga-parser_PASSWORD=123
+# Backend connection
+AYGA_HTTP_URL=http://127.0.0.1:9091/API
+AYGA_PASSWORD=123
 
 # Redis (опционально)
-# ayga-parser_REDIS_HOST=localhost
-# ayga-parser_REDIS_PORT=6379
+# AYGA_REDIS_HOST=localhost
+# AYGA_REDIS_PORT=6379
 
 # Логирование
-ayga-parser_LOG_LEVEL=INFO
+AYGA_LOG_LEVEL=INFO
 ```
 
 ### Быстрая настройка через CLI
 
 ```powershell
 # Установить URL и пароль
-ayga-parser config set-url http://your-ayga-parser-host:8080
-ayga-parser config set-password
+ayga_parser config set-url http://127.0.0.1:9091/API
+ayga_parser config set-password
 
 # Вас попросят ввести пароль (безопасно, через keyring)
 ```
@@ -139,11 +139,11 @@ ayga-parser config set-password
 // ~/.claude/settings.json
 {
   "mcpServers": {
-    "ayga-parser": {
-      "command": "ayga-parser-mcp",
+    "ayga-cli": {
+      "command": "ayga_parser-mcp",
       "args": [],
       "env": {
-        "ayga-parser_URL": "http://your-ayga-parser-host:8080"
+        "AYGA_HTTP_URL": "http://127.0.0.1:9091/API"
       }
     }
   }
@@ -157,8 +157,8 @@ ayga-parser config set-password
 {
   "servers": [
     {
-      "name": "ayga-parser",
-      "command": "ayga-parser-mcp",
+      "name": "ayga-cli",
+      "command": "ayga_parser-mcp",
       "cwd": "."
     }
   ]
@@ -170,9 +170,9 @@ ayga-parser config set-password
 ```python
 from mcp import ClientSession
 
-async with ClientSession('ayga-parser-mcp') as session:
-    result = await session.call_tool('run_parser', {
-        'parser': 'FreeAI::Perplexity',
+async with ClientSession('ayga_parser-mcp') as session:
+    result = await session.call_tool('get', {
+        'source': 'web-search',
         'query': 'OpenClaw competitors'
     })
     print(result.content)
@@ -182,7 +182,7 @@ async with ClientSession('ayga-parser-mcp') as session:
 
 ## 🐛 Troubleshooting
 
-### Ошибка: "ayga-parser: command not found"
+### Ошибка: "ayga_parser: command not found"
 
 **Решение:**
 ```powershell
@@ -210,7 +210,7 @@ pip install --force-reinstall "git+https://github.com/ozand/ayga-cli.git"
 **Решение:**
 ```powershell
 # Использовать переменную окружения вместо keyring
-$env:ayga-parser_PASSWORD = "123"
+$env:AYGA_PASSWORD = "123"
 
 # Или установить Windows Credential Manager backend
 pip install keyring-winvault
@@ -226,5 +226,5 @@ pip install keyring-winvault
 
 ---
 
-**Last Updated:** 2026-03-09  
+**Last Updated:** 2026-03-09
 **Version:** 2.3

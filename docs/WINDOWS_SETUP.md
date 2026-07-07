@@ -1,6 +1,6 @@
-# ayga-parser CLI — Windows Setup Guide
+# ayga-cli — Windows Setup Guide
 
-**Version:** 2.3  
+**Version:** 2.3
 **Last Updated:** 2026-03-09
 
 ---
@@ -13,21 +13,21 @@
 # 1. Install Python 3.10+ (if not installed)
 # Download from: https://python.org/downloads
 
-# 2. Install ayga-parser CLI
+# 2. Install ayga-cli
 pip install ayga-cli
 
 # 3. Initialize configuration
-ayga-parser init
+ayga_parser init
 
 # 4. Configure
 notepad $env:APPDATA\ayga-cli\.env
 
-# Add your ayga-parser credentials:
-# ayga-parser_URL=http://localhost:8080
-# ayga-parser_PASSWORD=123
+# Add your backend connection details:
+# AYGA_HTTP_URL=http://127.0.0.1:9091/API
+# AYGA_PASSWORD=123
 
 # 5. Test
-ayga-parser status
+ayga_parser status
 ```
 
 ---
@@ -36,7 +36,7 @@ ayga-parser status
 
 ```powershell
 # Download latest release
-# https://github.com/your-org/ayga-cli/releases/download/v2.3/ayga-cli-windows.exe
+# https://github.com/ozand/ayga-cli/releases/latest
 
 # Run directly
 .\ayga-cli-windows.exe status
@@ -67,17 +67,17 @@ explorer $env:APPDATA\ayga-cli
 Create `%APPDATA%\ayga-cli\.env`:
 
 ```env
-# ayga-parser API
-ayga-parser_URL=http://localhost:8080
-ayga-parser_PASSWORD=123
+# Backend connection
+AYGA_HTTP_URL=http://127.0.0.1:9091/API
+AYGA_PASSWORD=123
 
 # Redis (optional)
-ayga-parser_REDIS_HOST=localhost
-ayga-parser_REDIS_PORT=6379
-ayga-parser_REDIS_PASSWORD=your_redis_password
+AYGA_REDIS_HOST=localhost
+AYGA_REDIS_PORT=6379
+AYGA_REDIS_PASSWORD=your_redis_password
 
 # Logging
-ayga-parser_LOG_LEVEL=INFO
+AYGA_LOG_LEVEL=INFO
 ```
 
 ### Using Windows Credential Manager
@@ -85,8 +85,8 @@ ayga-parser_LOG_LEVEL=INFO
 Password is automatically stored in Windows Credential Manager:
 
 ```powershell
-# Store password (done automatically by `ayga-parser init`)
-ayga-parser config set-password
+# Store password (done automatically by `ayga_parser init`)
+ayga_parser config set-password
 
 # View stored credentials
 cmdkey /list | findstr ayga-cli
@@ -107,11 +107,11 @@ Add MCP server:
 ```json
 {
   "mcpServers": {
-    "ayga-parser": {
-      "command": "ayga-parser-mcp",
+    "ayga-cli": {
+      "command": "ayga_parser-mcp",
       "args": [],
       "env": {
-        "ayga-parser_URL": "http://localhost:8080"
+        "AYGA_HTTP_URL": "http://127.0.0.1:9091/API"
       }
     }
   }
@@ -130,8 +130,8 @@ Add:
 {
   "servers": [
     {
-      "name": "ayga-parser",
-      "command": "ayga-parser-mcp",
+      "name": "ayga-cli",
+      "command": "ayga_parser-mcp",
       "cwd": "."
     }
   ]
@@ -144,13 +144,13 @@ Add:
 # install: pip install mcp
 from mcp import ClientSession
 
-async with ClientSession('ayga-parser-mcp') as session:
-    # Run parser
-    result = await session.call_tool('run_parser', {
-        'parser': 'FreeAI::Perplexity',
+async with ClientSession('ayga_parser-mcp') as session:
+    # Fetch data from a source
+    result = await session.call_tool('get', {
+        'source': 'web-search',
         'query': 'OpenClaw competitors'
     })
-    
+
     print(result.content)
 ```
 
@@ -168,7 +168,7 @@ async with ClientSession('ayga-parser-mcp') as session:
 # https://git-scm.com/download/win
 
 # 3. Clone repository
-git clone https://github.com/your-org/ayga-cli
+git clone https://github.com/ozand/ayga-cli.git
 cd ayga-cli
 
 # 4. Create virtual environment
@@ -186,10 +186,10 @@ pip install -e ".[dev,mcp]"
 pip install pyinstaller
 
 # Build
-pyinstaller --onefile --name ayga-parser src\ayga_cli\main.py
-pyinstaller --onefile --name ayga-parser-mcp src\ayga_cli\mcp\server.py
+pyinstaller --onefile --name ayga_parser src\ayga_cli\main.py
+pyinstaller --onefile --name ayga_parser-mcp src\ayga_cli\mcp\server.py
 
-# Output: dist\ayga-parser.exe, dist\ayga-parser-mcp.exe
+# Output: dist\ayga_parser.exe, dist\ayga_parser-mcp.exe
 ```
 
 ### Run Tests
@@ -209,7 +209,7 @@ pytest --cov=ayga_cli --cov-report=html
 
 ## 🐛 Troubleshooting
 
-### Issue: "ayga-parser: command not found"
+### Issue: "ayga_parser: command not found"
 
 **Solution:**
 ```powershell
@@ -229,8 +229,8 @@ New-Item -ItemType Directory -Force -Path $env:APPDATA\ayga-cli
 
 # Create .env file
 @"
-ayga-parser_URL=http://localhost:8080
-ayga-parser_PASSWORD=123
+AYGA_HTTP_URL=http://127.0.0.1:9091/API
+AYGA_PASSWORD=123
 "@ | Out-File -FilePath $env:APPDATA\ayga-cli\.env -Encoding utf8
 ```
 
@@ -242,7 +242,7 @@ ayga-parser_PASSWORD=123
 pip install keyring-winvault
 
 # Or use environment variable instead
-$env:ayga-parser_PASSWORD = "123"
+$env:AYGA_PASSWORD = "123"
 ```
 
 ### Issue: MCP server not found by agent
@@ -250,13 +250,13 @@ $env:ayga-parser_PASSWORD = "123"
 **Solution:**
 ```powershell
 # Check if MCP is installed
-where ayga-parser-mcp
+where ayga_parser-mcp
 
 # If not found, install MCP extras
 pip install "ayga-cli[mcp]"
 
 # Verify MCP server
-ayga-parser-mcp --help
+ayga_parser-mcp --help
 ```
 
 ---
